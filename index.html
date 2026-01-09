@@ -23,6 +23,379 @@
             --success-green: #44ff88;
             --glass-bg: rgba(10, 22, 40, 0.85);
             --glass-border: rgba(0, 212, 255, 0.3);
+            --maroon: #722F37;
+            --maroon-dark: #4a1f24;
+            --tan: #D2B48C;
+            --ski-red: #CC2936;
+            --ski-red-dark: #8B1E26;
+        }
+
+        /* ==========================================
+           WELCOME SCREEN STYLES
+           ========================================== */
+        #welcomeScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0a1628 0%, #1a3a5c 30%, #0d2840 70%, #0a1628 100%);
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 20px;
+            overflow-y: auto;
+            transition: opacity 0.8s ease-out;
+        }
+
+        #welcomeScreen.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .welcome-header {
+            text-align: center;
+            margin-bottom: 20px;
+            animation: fadeInDown 1s ease-out;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .welcome-logo {
+            font-size: 60px;
+            margin-bottom: 10px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .welcome-title {
+            font-size: 52px;
+            font-weight: 800;
+            letter-spacing: 12px;
+            background: linear-gradient(135deg, #00d4ff 0%, #ffffff 50%, #00d4ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 60px rgba(0, 212, 255, 0.5);
+            margin-bottom: 5px;
+        }
+
+        .welcome-subtitle {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.6);
+            letter-spacing: 4px;
+            text-transform: uppercase;
+        }
+
+        /* Name Input Section */
+        .name-section {
+            margin-bottom: 30px;
+            animation: fadeInUp 1s ease-out 0.3s both;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .name-label {
+            display: block;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.7);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .name-input {
+            width: 320px;
+            padding: 15px 25px;
+            font-size: 18px;
+            font-family: inherit;
+            background: rgba(255, 255, 255, 0.08);
+            border: 2px solid rgba(0, 212, 255, 0.3);
+            border-radius: 12px;
+            color: #fff;
+            text-align: center;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .name-input:focus {
+            border-color: var(--accent-cyan);
+            background: rgba(255, 255, 255, 0.12);
+            box-shadow: 0 0 30px rgba(0, 212, 255, 0.3);
+        }
+
+        .name-input::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        /* Boat Selection */
+        .boat-selection-title {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-bottom: 25px;
+            text-align: center;
+            animation: fadeInUp 1s ease-out 0.5s both;
+        }
+
+        .boat-selection {
+            display: flex;
+            gap: 40px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 30px;
+            animation: fadeInUp 1s ease-out 0.7s both;
+        }
+
+        .boat-card {
+            width: 420px;
+            background: rgba(10, 22, 40, 0.9);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 25px;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .boat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, transparent, var(--accent-cyan), transparent);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .boat-card:hover {
+            transform: translateY(-8px);
+            border-color: rgba(0, 212, 255, 0.4);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4), 0 0 40px rgba(0, 212, 255, 0.15);
+        }
+
+        .boat-card:hover::before {
+            opacity: 1;
+        }
+
+        .boat-card.selected {
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 50px rgba(0, 212, 255, 0.4), inset 0 0 30px rgba(0, 212, 255, 0.1);
+        }
+
+        .boat-card.selected::before {
+            opacity: 1;
+        }
+
+        .boat-card.selected::after {
+            content: '✓ SELECTED';
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: var(--accent-cyan);
+            color: #000;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 5px 12px;
+            border-radius: 20px;
+            letter-spacing: 1px;
+        }
+
+        .boat-canvas-container {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(180deg, rgba(135, 206, 235, 0.15) 0%, rgba(26, 95, 122, 0.4) 100%);
+            border-radius: 12px;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .boat-canvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Water reflection effect */
+        .boat-canvas-container::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 40%;
+            background: linear-gradient(180deg, transparent 0%, rgba(26, 95, 122, 0.6) 100%);
+            pointer-events: none;
+        }
+
+        .boat-info {
+            text-align: center;
+        }
+
+        .boat-name {
+            font-size: 18px;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 5px;
+        }
+
+        .boat-year {
+            font-size: 24px;
+            font-weight: 300;
+            color: var(--accent-cyan);
+            margin-bottom: 10px;
+        }
+
+        .boat-specs {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .boat-spec {
+            text-align: center;
+        }
+
+        .boat-spec-value {
+            font-size: 16px;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .boat-spec-label {
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.5);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .boat-description {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.6);
+            line-height: 1.6;
+            margin-top: 15px;
+            font-style: italic;
+        }
+
+        /* Start Button */
+        .start-section {
+            animation: fadeInUp 1s ease-out 0.9s both;
+        }
+
+        .start-btn {
+            padding: 18px 60px;
+            font-size: 16px;
+            font-weight: 700;
+            font-family: inherit;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            background: linear-gradient(135deg, var(--accent-cyan) 0%, #0088cc 100%);
+            color: #fff;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 10px 40px rgba(0, 212, 255, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .start-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        .start-btn:hover::before {
+            left: 100%;
+        }
+
+        .start-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 50px rgba(0, 212, 255, 0.5);
+        }
+
+        .start-btn:active {
+            transform: translateY(0);
+        }
+
+        .start-btn:disabled {
+            background: rgba(255, 255, 255, 0.2);
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .start-hint {
+            margin-top: 15px;
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.4);
+            text-align: center;
+        }
+
+        /* Animated water background */
+        .water-bg {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 150px;
+            background: linear-gradient(180deg, transparent 0%, rgba(0, 100, 150, 0.2) 100%);
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .wave {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 200%;
+            height: 100px;
+            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 120'%3E%3Cpath fill='rgba(0,150,200,0.1)' d='M0,60 C150,120 350,0 600,60 C850,120 1050,0 1200,60 L1200,120 L0,120 Z'/%3E%3C/svg%3E") repeat-x;
+            animation: wave 8s linear infinite;
+        }
+
+        .wave:nth-child(2) {
+            bottom: 10px;
+            opacity: 0.5;
+            animation-duration: 10s;
+            animation-direction: reverse;
+        }
+
+        @keyframes wave {
+            from { transform: translateX(0); }
+            to { transform: translateX(-50%); }
         }
 
         body {
@@ -701,8 +1074,106 @@
     </style>
 </head>
 <body>
+    <!-- Welcome Screen -->
+    <div id="welcomeScreen">
+        <div class="water-bg">
+            <div class="wave"></div>
+            <div class="wave"></div>
+        </div>
+
+        <div class="welcome-header">
+            <div class="welcome-logo">🌊</div>
+            <h1 class="welcome-title">LIVARA</h1>
+            <p class="welcome-subtitle">Hydro-Thermal Recreation Simulation</p>
+        </div>
+
+        <div class="name-section">
+            <label class="name-label" for="playerName">Enter Your Name</label>
+            <input type="text" id="playerName" class="name-input" placeholder="Captain..." maxlength="20" autocomplete="off">
+        </div>
+
+        <h2 class="boat-selection-title">Choose Your Starting Vessel</h2>
+
+        <div class="boat-selection">
+            <!-- 1992 Sundancer Pontoon -->
+            <div class="boat-card" data-boat="sundancer" onclick="selectBoat('sundancer')">
+                <div class="boat-canvas-container">
+                    <canvas id="sundancerCanvas" class="boat-canvas"></canvas>
+                </div>
+                <div class="boat-info">
+                    <div class="boat-year">1992</div>
+                    <div class="boat-name">Sundancer 24' Pontoon</div>
+                    <div class="boat-specs">
+                        <div class="boat-spec">
+                            <div class="boat-spec-value">24'</div>
+                            <div class="boat-spec-label">Length</div>
+                        </div>
+                        <div class="boat-spec">
+                            <div class="boat-spec-value">88 HP</div>
+                            <div class="boat-spec-label">Evinrude V4</div>
+                        </div>
+                        <div class="boat-spec">
+                            <div class="boat-spec-value">10</div>
+                            <div class="boat-spec-label">Passengers</div>
+                        </div>
+                        <div class="boat-spec">
+                            <div class="boat-spec-value">28 MPH</div>
+                            <div class="boat-spec-label">Top Speed</div>
+                        </div>
+                    </div>
+                    <p class="boat-description">
+                        "A classic Falcon Industries pontoon from Lebanon, MO. The maroon graphics
+                        and tan accents make her unmistakable on the water. Perfect for cruising
+                        the thermal lazy river with friends and family."
+                    </p>
+                </div>
+            </div>
+
+            <!-- 1982 Ski Supreme -->
+            <div class="boat-card" data-boat="skisupreme" onclick="selectBoat('skisupreme')">
+                <div class="boat-canvas-container">
+                    <canvas id="skisupremeCanvas" class="boat-canvas"></canvas>
+                </div>
+                <div class="boat-info">
+                    <div class="boat-year">1982</div>
+                    <div class="boat-name">Ski Supreme Competition</div>
+                    <div class="boat-specs">
+                        <div class="boat-spec">
+                            <div class="boat-spec-value">19'</div>
+                            <div class="boat-spec-label">Length</div>
+                        </div>
+                        <div class="boat-spec">
+                            <div class="boat-spec-value">350 CI</div>
+                            <div class="boat-spec-label">Chevy Inboard</div>
+                        </div>
+                        <div class="boat-spec">
+                            <div class="boat-spec-value">7</div>
+                            <div class="boat-spec-label">Passengers</div>
+                        </div>
+                        <div class="boat-spec">
+                            <div class="boat-spec-value">42 MPH</div>
+                            <div class="boat-spec-label">Top Speed</div>
+                        </div>
+                    </div>
+                    <p class="boat-description">
+                        "A classic Supreme Industries competition towboat. The red gelcoat gleams in
+                        the sun. Direct drive with a perfect ski wake. Built for the surf waves and
+                        whitewater rapids."
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="start-section">
+            <button class="start-btn" id="startBtn" onclick="startSimulation()" disabled>
+                Launch Simulation
+            </button>
+            <p class="start-hint">Enter your name and select a boat to begin</p>
+        </div>
+    </div>
+
     <!-- Loading Screen -->
-    <div id="loadingScreen">
+    <div id="loadingScreen" style="display: none;">
         <div class="loading-logo">🌊</div>
         <div class="loading-text">LIVARA</div>
         <div class="loading-bar">
@@ -952,6 +1423,750 @@
         // LIVARA Hydro-Thermal Simulation Engine
         // ============================================
 
+        // ============================================
+        // WELCOME SCREEN & BOAT SELECTION
+        // ============================================
+
+        let selectedBoat = null;
+        let playerName = '';
+        let boatAnimationFrame = null;
+
+        // Initialize welcome screen
+        document.addEventListener('DOMContentLoaded', () => {
+            initWelcomeScreen();
+        });
+
+        function initWelcomeScreen() {
+            // Set up boat canvases
+            const sundancerCanvas = document.getElementById('sundancerCanvas');
+            const skisupremeCanvas = document.getElementById('skisupremeCanvas');
+
+            if (sundancerCanvas && skisupremeCanvas) {
+                // Set canvas sizes
+                sundancerCanvas.width = sundancerCanvas.offsetWidth * 2;
+                sundancerCanvas.height = sundancerCanvas.offsetHeight * 2;
+                skisupremeCanvas.width = skisupremeCanvas.offsetWidth * 2;
+                skisupremeCanvas.height = skisupremeCanvas.offsetHeight * 2;
+
+                // Start boat animations
+                animateBoats();
+            }
+
+            // Set up name input
+            const nameInput = document.getElementById('playerName');
+            nameInput.addEventListener('input', () => {
+                playerName = nameInput.value.trim();
+                updateStartButton();
+            });
+        }
+
+        function selectBoat(boatType) {
+            selectedBoat = boatType;
+
+            // Update UI
+            document.querySelectorAll('.boat-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            document.querySelector(`[data-boat="${boatType}"]`).classList.add('selected');
+
+            updateStartButton();
+        }
+
+        function updateStartButton() {
+            const startBtn = document.getElementById('startBtn');
+            const canStart = playerName.length > 0 && selectedBoat !== null;
+            startBtn.disabled = !canStart;
+        }
+
+        function startSimulation() {
+            if (!playerName || !selectedBoat) return;
+
+            // Store player info in state (will be set after state is defined)
+            window.playerSetup = {
+                name: playerName,
+                boat: selectedBoat
+            };
+
+            // Hide welcome screen
+            const welcomeScreen = document.getElementById('welcomeScreen');
+            welcomeScreen.classList.add('hidden');
+
+            // Stop boat animations
+            if (boatAnimationFrame) {
+                cancelAnimationFrame(boatAnimationFrame);
+            }
+
+            // Show loading screen
+            const loadingScreen = document.getElementById('loadingScreen');
+            loadingScreen.style.display = 'flex';
+
+            // Start the game
+            setTimeout(() => {
+                init();
+            }, 100);
+        }
+
+        // ============================================
+        // BOAT RENDERING FUNCTIONS
+        // ============================================
+
+        function animateBoats() {
+            const time = Date.now() / 1000;
+
+            drawSundancerPontoon(time);
+            drawSkiSupreme(time);
+
+            boatAnimationFrame = requestAnimationFrame(animateBoats);
+        }
+
+        // 1992 Sundancer 24' Pontoon - Maroon graphics, tan accents, Evinrude 88hp
+        function drawSundancerPontoon(time) {
+            const canvas = document.getElementById('sundancerCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width;
+            const h = canvas.height;
+
+            // Clear
+            ctx.clearRect(0, 0, w, h);
+
+            // Water
+            drawWater(ctx, w, h, time);
+
+            // Boat position with gentle bob
+            const bobY = Math.sin(time * 1.5) * 4;
+            const bobRotate = Math.sin(time * 1.2) * 0.02;
+
+            ctx.save();
+            ctx.translate(w / 2, h / 2 + bobY);
+            ctx.rotate(bobRotate);
+
+            const scale = Math.min(w / 500, h / 280);
+            ctx.scale(scale, scale);
+
+            // === PONTOON TUBES (Silver/Aluminum) ===
+            const pontoonLength = 320;
+            const pontoonRadius = 18;
+            const pontoonSpacing = 85;
+
+            // Left pontoon
+            ctx.save();
+            ctx.translate(-pontoonLength / 2, pontoonSpacing / 2 + 20);
+            drawPontoonTube(ctx, pontoonLength, pontoonRadius);
+            ctx.restore();
+
+            // Right pontoon
+            ctx.save();
+            ctx.translate(-pontoonLength / 2, -pontoonSpacing / 2 + 20);
+            drawPontoonTube(ctx, pontoonLength, pontoonRadius);
+            ctx.restore();
+
+            // === DECK ===
+            const deckLength = 300;
+            const deckWidth = 95;
+
+            // Deck shadow
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+            ctx.beginPath();
+            ctx.ellipse(0, 25, deckLength / 2 + 5, deckWidth / 2 + 5, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Main deck - Tan/beige carpet
+            const deckGradient = ctx.createLinearGradient(-deckLength / 2, 0, deckLength / 2, 0);
+            deckGradient.addColorStop(0, '#C4A77D');
+            deckGradient.addColorStop(0.5, '#D2B48C');
+            deckGradient.addColorStop(1, '#C4A77D');
+            ctx.fillStyle = deckGradient;
+
+            ctx.beginPath();
+            ctx.moveTo(-deckLength / 2 + 30, -deckWidth / 2);
+            ctx.lineTo(deckLength / 2 - 10, -deckWidth / 2);
+            ctx.quadraticCurveTo(deckLength / 2 + 15, 0, deckLength / 2 - 10, deckWidth / 2);
+            ctx.lineTo(-deckLength / 2 + 30, deckWidth / 2);
+            ctx.quadraticCurveTo(-deckLength / 2 - 5, 0, -deckLength / 2 + 30, -deckWidth / 2);
+            ctx.fill();
+
+            // Deck border - Maroon trim
+            ctx.strokeStyle = '#722F37';
+            ctx.lineWidth = 6;
+            ctx.stroke();
+
+            // === MAROON GRAPHICS/ACCENT STRIPE ===
+            ctx.fillStyle = '#722F37';
+
+            // Front accent panel
+            ctx.beginPath();
+            ctx.moveTo(-deckLength / 2 + 35, -deckWidth / 2 + 8);
+            ctx.lineTo(-deckLength / 2 + 100, -deckWidth / 2 + 8);
+            ctx.lineTo(-deckLength / 2 + 90, -deckWidth / 2 + 20);
+            ctx.lineTo(-deckLength / 2 + 40, -deckWidth / 2 + 20);
+            ctx.closePath();
+            ctx.fill();
+
+            // Mirror on other side
+            ctx.beginPath();
+            ctx.moveTo(-deckLength / 2 + 35, deckWidth / 2 - 8);
+            ctx.lineTo(-deckLength / 2 + 100, deckWidth / 2 - 8);
+            ctx.lineTo(-deckLength / 2 + 90, deckWidth / 2 - 20);
+            ctx.lineTo(-deckLength / 2 + 40, deckWidth / 2 - 20);
+            ctx.closePath();
+            ctx.fill();
+
+            // Side stripe - maroon
+            ctx.fillStyle = '#722F37';
+            ctx.fillRect(-80, -deckWidth / 2 + 5, 180, 12);
+            ctx.fillRect(-80, deckWidth / 2 - 17, 180, 12);
+
+            // === FENCE/RAILING ===
+            ctx.strokeStyle = '#8B8B8B';
+            ctx.lineWidth = 2;
+
+            // Fence posts
+            for (let i = 0; i < 8; i++) {
+                const x = -deckLength / 2 + 50 + i * 35;
+                ctx.beginPath();
+                ctx.moveTo(x, -deckWidth / 2 + 3);
+                ctx.lineTo(x, -deckWidth / 2 - 15);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(x, deckWidth / 2 - 3);
+                ctx.lineTo(x, deckWidth / 2 + 15);
+                ctx.stroke();
+            }
+
+            // Top rail
+            ctx.beginPath();
+            ctx.moveTo(-deckLength / 2 + 50, -deckWidth / 2 - 15);
+            ctx.lineTo(deckLength / 2 - 60, -deckWidth / 2 - 15);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(-deckLength / 2 + 50, deckWidth / 2 + 15);
+            ctx.lineTo(deckLength / 2 - 60, deckWidth / 2 + 15);
+            ctx.stroke();
+
+            // === SEATING - Tan with maroon accents ===
+            // Front bench
+            drawPontoonSeat(ctx, -100, 0, 60, 70, '#D2B48C', '#722F37');
+
+            // Rear bench (captain area)
+            drawPontoonSeat(ctx, 60, 0, 80, 75, '#D2B48C', '#722F37');
+
+            // Side seats
+            drawPontoonSeat(ctx, -20, -30, 50, 25, '#D2B48C', '#722F37');
+            drawPontoonSeat(ctx, -20, 30, 50, 25, '#D2B48C', '#722F37');
+
+            // === STEERING CONSOLE ===
+            ctx.fillStyle = '#4a4a4a';
+            ctx.fillRect(30, -20, 35, 40);
+            ctx.fillStyle = '#333';
+            ctx.fillRect(33, -17, 29, 34);
+
+            // Steering wheel
+            ctx.strokeStyle = '#222';
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.arc(47, 0, 12, 0, Math.PI * 2);
+            ctx.stroke();
+
+            // === EVINRUDE 88 HP OUTBOARD MOTOR ===
+            drawEvinrude88(ctx, deckLength / 2 + 10, 0, time);
+
+            // === SUNDANCER LOGO ===
+            ctx.fillStyle = '#722F37';
+            ctx.font = 'bold 14px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('SUNDANCER', -80, 5);
+
+            ctx.restore();
+
+            // Draw reflection
+            drawReflection(ctx, w, h);
+        }
+
+        function drawPontoonTube(ctx, length, radius) {
+            // Main tube - aluminum silver
+            const tubeGradient = ctx.createLinearGradient(0, -radius, 0, radius);
+            tubeGradient.addColorStop(0, '#E8E8E8');
+            tubeGradient.addColorStop(0.3, '#C0C0C0');
+            tubeGradient.addColorStop(0.5, '#A8A8A8');
+            tubeGradient.addColorStop(0.7, '#909090');
+            tubeGradient.addColorStop(1, '#787878');
+
+            ctx.fillStyle = tubeGradient;
+            ctx.beginPath();
+            ctx.moveTo(0, -radius);
+            ctx.lineTo(length - 30, -radius);
+            ctx.quadraticCurveTo(length + 10, 0, length - 30, radius);
+            ctx.lineTo(0, radius);
+            ctx.quadraticCurveTo(-25, 0, 0, -radius);
+            ctx.fill();
+
+            // Highlight
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(10, -radius + 4);
+            ctx.lineTo(length - 40, -radius + 4);
+            ctx.stroke();
+
+            // End cap rings
+            ctx.strokeStyle = '#666';
+            ctx.lineWidth = 3;
+            for (let i = 0; i < 3; i++) {
+                ctx.beginPath();
+                ctx.arc(length - 25 + i * 8, 0, radius - 2, -Math.PI / 2, Math.PI / 2);
+                ctx.stroke();
+            }
+        }
+
+        function drawPontoonSeat(ctx, x, y, width, height, baseColor, accentColor) {
+            // Seat base
+            ctx.fillStyle = baseColor;
+            ctx.beginPath();
+            ctx.roundRect(x - width / 2, y - height / 2, width, height, 5);
+            ctx.fill();
+
+            // Seat back
+            const backGradient = ctx.createLinearGradient(x - width / 2, y, x + width / 2, y);
+            backGradient.addColorStop(0, baseColor);
+            backGradient.addColorStop(0.5, '#E8D5B5');
+            backGradient.addColorStop(1, baseColor);
+            ctx.fillStyle = backGradient;
+            ctx.beginPath();
+            ctx.roundRect(x - width / 2 + 3, y - height / 2 + 3, width - 6, height / 2 - 3, 3);
+            ctx.fill();
+
+            // Maroon accent piping
+            ctx.strokeStyle = accentColor;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.roundRect(x - width / 2, y - height / 2, width, height, 5);
+            ctx.stroke();
+
+            // Center accent stripe
+            ctx.fillStyle = accentColor;
+            ctx.fillRect(x - 2, y - height / 2 + 5, 4, height / 2 - 8);
+        }
+
+        function drawEvinrude88(ctx, x, y, time) {
+            ctx.save();
+            ctx.translate(x, y);
+
+            // Motor tilt
+            const tilt = Math.sin(time * 2) * 0.03;
+            ctx.rotate(tilt);
+
+            // Lower unit (black)
+            ctx.fillStyle = '#1a1a1a';
+            ctx.beginPath();
+            ctx.moveTo(0, -12);
+            ctx.lineTo(35, -8);
+            ctx.lineTo(40, 0);
+            ctx.lineTo(35, 8);
+            ctx.lineTo(0, 12);
+            ctx.closePath();
+            ctx.fill();
+
+            // Prop shaft
+            ctx.fillStyle = '#333';
+            ctx.fillRect(30, -3, 15, 6);
+
+            // Propeller
+            ctx.save();
+            ctx.translate(42, 0);
+            ctx.rotate(time * 8);
+            ctx.fillStyle = '#444';
+            for (let i = 0; i < 3; i++) {
+                ctx.rotate(Math.PI * 2 / 3);
+                ctx.beginPath();
+                ctx.ellipse(8, 0, 12, 4, 0.3, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            ctx.restore();
+
+            // Cowling - White with blue Evinrude graphics (early 90s style)
+            const cowlGradient = ctx.createLinearGradient(-25, -25, -25, 25);
+            cowlGradient.addColorStop(0, '#F5F5F5');
+            cowlGradient.addColorStop(0.5, '#E8E8E8');
+            cowlGradient.addColorStop(1, '#D0D0D0');
+            ctx.fillStyle = cowlGradient;
+
+            ctx.beginPath();
+            ctx.moveTo(-5, -20);
+            ctx.lineTo(-35, -22);
+            ctx.quadraticCurveTo(-50, -20, -50, 0);
+            ctx.quadraticCurveTo(-50, 20, -35, 22);
+            ctx.lineTo(-5, 20);
+            ctx.quadraticCurveTo(5, 0, -5, -20);
+            ctx.fill();
+
+            // Cowling outline
+            ctx.strokeStyle = '#999';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+
+            // Blue accent stripe (Evinrude 90s style)
+            ctx.fillStyle = '#1E5AA8';
+            ctx.beginPath();
+            ctx.moveTo(-8, -15);
+            ctx.lineTo(-40, -16);
+            ctx.lineTo(-42, -10);
+            ctx.lineTo(-10, -9);
+            ctx.closePath();
+            ctx.fill();
+
+            // "EVINRUDE" text
+            ctx.fillStyle = '#1E5AA8';
+            ctx.font = 'bold 7px Arial';
+            ctx.textAlign = 'center';
+            ctx.save();
+            ctx.translate(-28, 2);
+            ctx.rotate(-0.1);
+            ctx.fillText('EVINRUDE', 0, 0);
+            ctx.restore();
+
+            // "88" horsepower
+            ctx.fillStyle = '#C41E3A';
+            ctx.font = 'bold 10px Arial';
+            ctx.fillText('88', -28, 14);
+
+            // Teal accent (90s Evinrude style)
+            ctx.fillStyle = '#008B8B';
+            ctx.fillRect(-45, 5, 25, 3);
+
+            ctx.restore();
+        }
+
+        // 1982 Ski Supreme Competition - Red gelcoat, inboard
+        function drawSkiSupreme(time) {
+            const canvas = document.getElementById('skisupremeCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width;
+            const h = canvas.height;
+
+            // Clear
+            ctx.clearRect(0, 0, w, h);
+
+            // Water
+            drawWater(ctx, w, h, time + 1);
+
+            // Boat position with gentle bob
+            const bobY = Math.sin(time * 1.8 + 0.5) * 5;
+            const bobRotate = Math.sin(time * 1.4 + 0.3) * 0.025;
+
+            ctx.save();
+            ctx.translate(w / 2, h / 2 + bobY);
+            ctx.rotate(bobRotate);
+
+            const scale = Math.min(w / 450, h / 250);
+            ctx.scale(scale, scale);
+
+            // === HULL ===
+            // Hull shadow
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+            ctx.beginPath();
+            ctx.ellipse(0, 30, 180, 50, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Main hull - Red gelcoat
+            const hullGradient = ctx.createLinearGradient(0, -40, 0, 40);
+            hullGradient.addColorStop(0, '#E82C38');
+            hullGradient.addColorStop(0.3, '#CC2936');
+            hullGradient.addColorStop(0.6, '#B02530');
+            hullGradient.addColorStop(1, '#8B1E26');
+
+            ctx.fillStyle = hullGradient;
+            ctx.beginPath();
+            // Classic ski boat hull shape - pointed bow, wide stern
+            ctx.moveTo(-170, 0); // Bow point
+            ctx.quadraticCurveTo(-160, -25, -120, -35);
+            ctx.lineTo(120, -40);
+            ctx.quadraticCurveTo(160, -38, 170, -25);
+            ctx.lineTo(175, 25);
+            ctx.quadraticCurveTo(160, 38, 120, 40);
+            ctx.lineTo(-120, 35);
+            ctx.quadraticCurveTo(-160, 25, -170, 0);
+            ctx.fill();
+
+            // Hull highlight
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(-150, -20);
+            ctx.quadraticCurveTo(-100, -30, 100, -35);
+            ctx.stroke();
+
+            // Chrome rub rail
+            const railGradient = ctx.createLinearGradient(0, -40, 0, -35);
+            railGradient.addColorStop(0, '#E0E0E0');
+            railGradient.addColorStop(0.5, '#FFFFFF');
+            railGradient.addColorStop(1, '#B0B0B0');
+            ctx.strokeStyle = railGradient;
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.moveTo(-160, -5);
+            ctx.quadraticCurveTo(-155, -28, -120, -36);
+            ctx.lineTo(120, -41);
+            ctx.stroke();
+
+            // === DECK ===
+            // Deck - white/off-white fiberglass
+            const deckGradient = ctx.createLinearGradient(-150, 0, 150, 0);
+            deckGradient.addColorStop(0, '#F0F0F0');
+            deckGradient.addColorStop(0.5, '#FAFAFA');
+            deckGradient.addColorStop(1, '#F0F0F0');
+            ctx.fillStyle = deckGradient;
+
+            ctx.beginPath();
+            ctx.moveTo(-145, 0);
+            ctx.quadraticCurveTo(-140, -20, -100, -28);
+            ctx.lineTo(100, -32);
+            ctx.quadraticCurveTo(140, -30, 150, -15);
+            ctx.lineTo(150, 15);
+            ctx.quadraticCurveTo(140, 30, 100, 32);
+            ctx.lineTo(-100, 28);
+            ctx.quadraticCurveTo(-140, 20, -145, 0);
+            ctx.fill();
+
+            // Red accent stripe on deck
+            ctx.fillStyle = '#CC2936';
+            ctx.beginPath();
+            ctx.moveTo(-130, -22);
+            ctx.lineTo(80, -26);
+            ctx.lineTo(80, -22);
+            ctx.lineTo(-130, -18);
+            ctx.closePath();
+            ctx.fill();
+
+            // Mirror stripe
+            ctx.beginPath();
+            ctx.moveTo(-130, 22);
+            ctx.lineTo(80, 26);
+            ctx.lineTo(80, 22);
+            ctx.lineTo(-130, 18);
+            ctx.closePath();
+            ctx.fill();
+
+            // === WINDSHIELD ===
+            // Wraparound windshield frame - chrome
+            ctx.strokeStyle = '#C0C0C0';
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.moveTo(-40, -25);
+            ctx.quadraticCurveTo(-20, -35, 20, -35);
+            ctx.quadraticCurveTo(50, -33, 60, -25);
+            ctx.stroke();
+
+            // Windshield glass
+            ctx.fillStyle = 'rgba(135, 206, 235, 0.4)';
+            ctx.beginPath();
+            ctx.moveTo(-35, -23);
+            ctx.quadraticCurveTo(-15, -32, 20, -32);
+            ctx.quadraticCurveTo(45, -30, 55, -23);
+            ctx.lineTo(50, -15);
+            ctx.quadraticCurveTo(20, -20, -30, -15);
+            ctx.closePath();
+            ctx.fill();
+
+            // Glass reflection
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(-25, -28);
+            ctx.quadraticCurveTo(10, -30, 40, -27);
+            ctx.stroke();
+
+            // === INTERIOR ===
+            // Floor/carpet area
+            ctx.fillStyle = '#8B0000';
+            ctx.beginPath();
+            ctx.ellipse(20, 0, 100, 22, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Front seats (bucket style)
+            drawSkiBoatSeat(ctx, -20, -12, 35, 25);
+            drawSkiBoatSeat(ctx, -20, 12, 35, 25);
+
+            // Rear bench seat
+            ctx.fillStyle = '#F5F5F5';
+            ctx.beginPath();
+            ctx.roundRect(70, -28, 60, 56, 5);
+            ctx.fill();
+            ctx.fillStyle = '#E0E0E0';
+            ctx.beginPath();
+            ctx.roundRect(75, -25, 50, 50, 3);
+            ctx.fill();
+
+            // === STEERING & DASH ===
+            // Dashboard
+            ctx.fillStyle = '#333';
+            ctx.fillRect(-50, -18, 45, 36);
+
+            // Gauges
+            ctx.fillStyle = '#1a1a1a';
+            ctx.beginPath();
+            ctx.arc(-38, -5, 8, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(-20, -5, 8, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(-38, 10, 6, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(-20, 10, 6, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Gauge faces
+            ctx.fillStyle = '#F0F0F0';
+            ctx.beginPath();
+            ctx.arc(-38, -5, 6, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(-20, -5, 6, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Steering wheel
+            ctx.strokeStyle = '#222';
+            ctx.lineWidth = 5;
+            ctx.beginPath();
+            ctx.arc(-35, 5, 14, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.fillStyle = '#333';
+            ctx.beginPath();
+            ctx.arc(-35, 5, 5, 0, Math.PI * 2);
+            ctx.fill();
+
+            // === ENGINE COVER (Inboard 350) ===
+            ctx.fillStyle = '#DDD';
+            ctx.beginPath();
+            ctx.roundRect(30, -15, 35, 30, 3);
+            ctx.fill();
+            ctx.strokeStyle = '#AAA';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Engine vents
+            ctx.strokeStyle = '#999';
+            ctx.lineWidth = 1;
+            for (let i = 0; i < 4; i++) {
+                ctx.beginPath();
+                ctx.moveTo(35, -10 + i * 7);
+                ctx.lineTo(60, -10 + i * 7);
+                ctx.stroke();
+            }
+
+            // === SKI TOW PYLON ===
+            ctx.fillStyle = '#C0C0C0';
+            ctx.fillRect(45, -5, 6, 10);
+            ctx.fillRect(43, -18, 10, 15);
+
+            // Pylon shine
+            ctx.fillStyle = '#E8E8E8';
+            ctx.fillRect(44, -17, 3, 13);
+
+            // === TRANSOM & SWIM PLATFORM ===
+            // Swim platform
+            ctx.fillStyle = '#8B4513';
+            ctx.fillRect(155, -30, 20, 60);
+
+            // Platform wood grain
+            ctx.strokeStyle = '#6B3510';
+            ctx.lineWidth = 1;
+            for (let i = 0; i < 6; i++) {
+                ctx.beginPath();
+                ctx.moveTo(155, -25 + i * 10);
+                ctx.lineTo(175, -25 + i * 10);
+                ctx.stroke();
+            }
+
+            // === SKI SUPREME BRANDING ===
+            ctx.fillStyle = '#FFFFFF';
+            ctx.font = 'bold 12px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('SKI SUPREME', 0, -5);
+
+            // "Competition" script
+            ctx.font = 'italic 8px Arial';
+            ctx.fillStyle = '#FFD700';
+            ctx.fillText('Competition', 0, 5);
+
+            ctx.restore();
+
+            // Draw reflection
+            drawReflection(ctx, w, h);
+        }
+
+        function drawSkiBoatSeat(ctx, x, y, width, height) {
+            // Seat base - white vinyl
+            const seatGradient = ctx.createLinearGradient(x, y - height / 2, x, y + height / 2);
+            seatGradient.addColorStop(0, '#F8F8F8');
+            seatGradient.addColorStop(0.5, '#E8E8E8');
+            seatGradient.addColorStop(1, '#D8D8D8');
+            ctx.fillStyle = seatGradient;
+            ctx.beginPath();
+            ctx.roundRect(x - width / 2, y - height / 2, width, height, 4);
+            ctx.fill();
+
+            // Red accent stripe
+            ctx.fillStyle = '#CC2936';
+            ctx.fillRect(x - width / 2 + 3, y - 2, width - 6, 4);
+
+            // Seat outline
+            ctx.strokeStyle = '#BBB';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.roundRect(x - width / 2, y - height / 2, width, height, 4);
+            ctx.stroke();
+        }
+
+        function drawWater(ctx, w, h, time) {
+            // Water gradient
+            const waterGradient = ctx.createLinearGradient(0, 0, 0, h);
+            waterGradient.addColorStop(0, 'rgba(135, 206, 235, 0.2)');
+            waterGradient.addColorStop(0.5, 'rgba(70, 130, 180, 0.3)');
+            waterGradient.addColorStop(1, 'rgba(25, 80, 120, 0.5)');
+            ctx.fillStyle = waterGradient;
+            ctx.fillRect(0, 0, w, h);
+
+            // Animated waves
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+            ctx.lineWidth = 2;
+
+            for (let i = 0; i < 8; i++) {
+                ctx.beginPath();
+                for (let x = 0; x < w; x += 10) {
+                    const y = h * 0.3 + i * 25 + Math.sin((x / 50) + time * 2 + i) * 8;
+                    if (x === 0) {
+                        ctx.moveTo(x, y);
+                    } else {
+                        ctx.lineTo(x, y);
+                    }
+                }
+                ctx.stroke();
+            }
+
+            // Sparkles
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+            for (let i = 0; i < 20; i++) {
+                const sparkleX = (Math.sin(i * 7.3 + time) * 0.5 + 0.5) * w;
+                const sparkleY = (Math.cos(i * 4.7 + time * 0.7) * 0.3 + 0.5) * h;
+                const sparkleSize = (Math.sin(time * 3 + i) + 1) * 2;
+                if (sparkleSize > 1) {
+                    ctx.beginPath();
+                    ctx.arc(sparkleX, sparkleY, sparkleSize, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+        }
+
+        function drawReflection(ctx, w, h) {
+            // Simple reflection overlay
+            ctx.fillStyle = 'rgba(25, 80, 120, 0.3)';
+            ctx.fillRect(0, h * 0.65, w, h * 0.35);
+        }
+
         const canvas = document.getElementById('mainCanvas');
         const ctx = canvas.getContext('2d');
         const miniCanvas = document.getElementById('miniMapCanvas');
@@ -959,6 +2174,10 @@
 
         // Game State
         const state = {
+            // Player
+            playerName: '',
+            playerBoat: null,
+
             // Time
             time: 12 * 60, // Minutes since midnight (12:00 PM)
             day: 1,
@@ -1199,14 +2418,25 @@
         }
 
         function startGame() {
+            // Set player info from welcome screen
+            if (window.playerSetup) {
+                state.playerName = window.playerSetup.name;
+                state.playerBoat = window.playerSetup.boat;
+            }
+
             // Initialize particles
             initParticles();
 
             // Start game loop
             requestAnimationFrame(gameLoop);
 
-            // Show welcome notification
-            showNotification('Welcome to LIVARA! Click facilities to learn more.', 'success');
+            // Show personalized welcome notification
+            const boatNames = {
+                sundancer: "1992 Sundancer 24' Pontoon",
+                skisupreme: "1982 Ski Supreme"
+            };
+            const boatName = boatNames[state.playerBoat] || 'your boat';
+            showNotification(`Welcome, Captain ${state.playerName}! Your ${boatName} is ready. Click facilities to explore.`, 'success');
         }
 
         // ============================================
@@ -1629,6 +2859,9 @@
             // Draw facilities
             drawFacilities(w, h);
 
+            // Draw player's boat on the reservoir
+            drawPlayerBoat(w, h);
+
             // Draw particles
             drawParticles(w, h);
 
@@ -1637,6 +2870,164 @@
 
             // Draw mini map
             drawMiniMap();
+        }
+
+        // Draw the player's selected boat cruising on the reservoir
+        function drawPlayerBoat(w, h) {
+            if (!state.playerBoat) return;
+
+            const time = Date.now() / 1000;
+
+            // Boat cruises around the reservoir in a figure-8 pattern
+            const pathProgress = (time * 0.05) % 1;
+            const angle = pathProgress * Math.PI * 2;
+
+            // Reservoir bounds
+            const reservoirX = 0.5 * w;
+            const reservoirY = 0.42 * h;
+            const radiusX = 0.18 * w;
+            const radiusY = 0.08 * h;
+
+            // Figure-8 path
+            const boatX = reservoirX + Math.sin(angle) * radiusX;
+            const boatY = reservoirY + Math.sin(angle * 2) * radiusY * 0.5;
+
+            // Boat direction
+            const nextX = reservoirX + Math.sin(angle + 0.1) * radiusX;
+            const nextY = reservoirY + Math.sin((angle + 0.1) * 2) * radiusY * 0.5;
+            const boatAngle = Math.atan2(nextY - boatY, nextX - boatX);
+
+            ctx.save();
+            ctx.translate(boatX, boatY);
+            ctx.rotate(boatAngle);
+
+            const boatScale = 0.4;
+            ctx.scale(boatScale, boatScale);
+
+            if (state.playerBoat === 'sundancer') {
+                drawMiniPontoon(ctx, time);
+            } else {
+                drawMiniSkiBoat(ctx, time);
+            }
+
+            ctx.restore();
+
+            // Wake effect
+            drawBoatWake(ctx, boatX, boatY, boatAngle, time);
+        }
+
+        // Simplified pontoon for game view
+        function drawMiniPontoon(ctx, time) {
+            // Pontoon tubes
+            ctx.fillStyle = '#A8A8A8';
+            ctx.beginPath();
+            ctx.roundRect(-50, -20, 100, 12, 6);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.roundRect(-50, 8, 100, 12, 6);
+            ctx.fill();
+
+            // Deck
+            ctx.fillStyle = '#D2B48C';
+            ctx.beginPath();
+            ctx.roundRect(-45, -15, 90, 30, 5);
+            ctx.fill();
+
+            // Maroon trim
+            ctx.strokeStyle = '#722F37';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+
+            // Maroon graphics
+            ctx.fillStyle = '#722F37';
+            ctx.fillRect(-30, -12, 50, 4);
+            ctx.fillRect(-30, 8, 50, 4);
+
+            // Canopy frame
+            ctx.strokeStyle = '#666';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(-20, -12);
+            ctx.lineTo(-20, -25);
+            ctx.lineTo(30, -25);
+            ctx.lineTo(30, -12);
+            ctx.stroke();
+
+            // Motor
+            ctx.fillStyle = '#E8E8E8';
+            ctx.beginPath();
+            ctx.roundRect(45, -8, 15, 16, 3);
+            ctx.fill();
+            ctx.fillStyle = '#1E5AA8';
+            ctx.fillRect(47, -5, 10, 3);
+        }
+
+        // Simplified ski boat for game view
+        function drawMiniSkiBoat(ctx, time) {
+            // Hull
+            const hullGrad = ctx.createLinearGradient(0, -15, 0, 15);
+            hullGrad.addColorStop(0, '#E82C38');
+            hullGrad.addColorStop(1, '#8B1E26');
+            ctx.fillStyle = hullGrad;
+
+            ctx.beginPath();
+            ctx.moveTo(-55, 0);
+            ctx.quadraticCurveTo(-50, -18, -30, -20);
+            ctx.lineTo(40, -22);
+            ctx.quadraticCurveTo(55, -18, 55, 0);
+            ctx.quadraticCurveTo(55, 18, 40, 22);
+            ctx.lineTo(-30, 20);
+            ctx.quadraticCurveTo(-50, 18, -55, 0);
+            ctx.fill();
+
+            // Deck
+            ctx.fillStyle = '#F5F5F5';
+            ctx.beginPath();
+            ctx.ellipse(0, 0, 40, 15, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Windshield
+            ctx.fillStyle = 'rgba(135, 206, 235, 0.5)';
+            ctx.beginPath();
+            ctx.ellipse(-15, 0, 15, 10, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Chrome rail
+            ctx.strokeStyle = '#C0C0C0';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(-50, -8);
+            ctx.lineTo(40, -18);
+            ctx.stroke();
+
+            // Ski pylon
+            ctx.fillStyle = '#C0C0C0';
+            ctx.fillRect(15, -8, 4, 16);
+        }
+
+        function drawBoatWake(ctx, x, y, angle, time) {
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.rotate(angle + Math.PI);
+
+            // Wake lines
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+            ctx.lineWidth = 2;
+
+            for (let i = 1; i <= 3; i++) {
+                const spread = i * 8;
+                const length = i * 15;
+                ctx.beginPath();
+                ctx.moveTo(20, 0);
+                ctx.lineTo(20 + length, -spread);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(20, 0);
+                ctx.lineTo(20 + length, spread);
+                ctx.stroke();
+            }
+
+            ctx.restore();
         }
 
         function drawBackground(w, h) {

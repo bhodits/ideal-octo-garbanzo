@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LIVARA - Hydro-Thermal Recreation Simulation</title>
+    <title>LIVARA - Hydro-Thermal Engineering Simulation</title>
     <style>
         * {
             margin: 0;
@@ -12,581 +12,400 @@
         }
 
         :root {
-            --primary-blue: #0a1628;
-            --secondary-blue: #1a2d4a;
+            --bg-primary: #0a0e17;
+            --bg-secondary: #131a2a;
             --accent-cyan: #00d4ff;
             --accent-orange: #ff6b35;
-            --hot-red: #ff4444;
-            --warm-orange: #ff8c00;
-            --cool-blue: #4488ff;
-            --cold-blue: #00aaff;
-            --success-green: #44ff88;
-            --glass-bg: rgba(10, 22, 40, 0.85);
-            --glass-border: rgba(0, 212, 255, 0.3);
+            --hot: #ff3333;
+            --warm: #ff8800;
+            --cool: #44aaff;
+            --cold: #0066cc;
+            --text: #ffffff;
+            --text-dim: rgba(255,255,255,0.6);
+            --glass: rgba(13, 20, 35, 0.85);
+            --glass-border: rgba(0, 212, 255, 0.2);
         }
 
         body {
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            background: linear-gradient(135deg, #0a1628 0%, #1a2d4a 50%, #0d1f35 100%);
-            color: #fff;
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text);
             overflow: hidden;
             height: 100vh;
             width: 100vw;
         }
 
-        #gameContainer {
+        #app {
             display: flex;
             height: 100vh;
             width: 100vw;
         }
 
-        #canvasContainer {
+        /* Main Canvas Area */
+        #canvas-container {
             flex: 1;
             position: relative;
-            overflow: hidden;
         }
 
         #mainCanvas {
             display: block;
-            cursor: pointer;
+            background: var(--bg-primary);
         }
 
-        #uiOverlay {
+        /* Dashboard Overlay */
+        #dashboard {
             position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
+            top: 20px;
+            left: 20px;
+            right: 320px;
+            display: flex;
+            justify-content: space-between;
             pointer-events: none;
         }
 
-        #uiOverlay > * {
+        .dash-card {
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 16px 24px;
             pointer-events: auto;
         }
 
-        /* Header */
-        #header {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 300px;
-            padding: 15px 25px;
-            background: linear-gradient(180deg, rgba(10, 22, 40, 0.95) 0%, transparent 100%);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            z-index: 10;
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .logo-icon {
-            width: 50px;
-            height: 50px;
-            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-orange));
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            box-shadow: 0 0 20px rgba(0, 212, 255, 0.4);
-        }
-
-        .logo-text h1 {
+        .dash-card h1 {
             font-size: 28px;
             font-weight: 700;
-            background: linear-gradient(90deg, var(--accent-cyan), #fff);
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-orange));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            letter-spacing: 3px;
+            letter-spacing: 4px;
         }
 
-        .logo-text p {
+        .dash-card .subtitle {
             font-size: 10px;
-            color: rgba(255, 255, 255, 0.6);
+            color: var(--text-dim);
             letter-spacing: 2px;
             text-transform: uppercase;
         }
 
-        .stats-bar {
+        .metrics {
             display: flex;
             gap: 30px;
         }
 
-        .stat-item {
+        .metric {
             text-align: center;
         }
 
-        .stat-value {
-            font-size: 24px;
+        .metric-value {
+            font-size: 28px;
             font-weight: 700;
-            color: var(--accent-cyan);
-            text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+            font-family: 'Courier New', monospace;
         }
 
-        .stat-value.hot { color: var(--hot-red); text-shadow: 0 0 10px rgba(255, 68, 68, 0.5); }
-        .stat-value.warm { color: var(--warm-orange); text-shadow: 0 0 10px rgba(255, 140, 0, 0.5); }
-        .stat-value.money { color: var(--success-green); text-shadow: 0 0 10px rgba(68, 255, 136, 0.5); }
+        .metric-value.hot { color: var(--hot); text-shadow: 0 0 20px rgba(255,51,51,0.5); }
+        .metric-value.warm { color: var(--warm); text-shadow: 0 0 20px rgba(255,136,0,0.5); }
+        .metric-value.cool { color: var(--accent-cyan); text-shadow: 0 0 20px rgba(0,212,255,0.5); }
+        .metric-value.money { color: #44ff88; text-shadow: 0 0 20px rgba(68,255,136,0.5); }
 
-        .stat-label {
+        .metric-label {
             font-size: 10px;
-            color: rgba(255, 255, 255, 0.5);
+            color: var(--text-dim);
             text-transform: uppercase;
             letter-spacing: 1px;
+            margin-top: 4px;
         }
 
-        /* Side Panel */
-        #sidePanel {
+        /* Control Panel */
+        #control-panel {
             width: 300px;
-            background: var(--glass-bg);
-            border-left: 1px solid var(--glass-border);
+            background: var(--glass);
             backdrop-filter: blur(20px);
+            border-left: 1px solid var(--glass-border);
             display: flex;
             flex-direction: column;
             overflow: hidden;
         }
 
         .panel-header {
-            padding: 20px;
-            background: rgba(0, 212, 255, 0.1);
+            padding: 24px;
+            background: linear-gradient(180deg, rgba(0,212,255,0.1) 0%, transparent 100%);
             border-bottom: 1px solid var(--glass-border);
         }
 
         .panel-header h2 {
             font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 3px;
             text-transform: uppercase;
-            letter-spacing: 2px;
             color: var(--accent-cyan);
         }
 
         .panel-content {
             flex: 1;
             overflow-y: auto;
-            padding: 15px;
+            padding: 20px;
         }
 
         .panel-content::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .panel-content::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.05);
+            width: 4px;
         }
 
         .panel-content::-webkit-scrollbar-thumb {
             background: var(--accent-cyan);
-            border-radius: 3px;
+            border-radius: 2px;
         }
 
-        /* Control Sections */
         .control-section {
-            margin-bottom: 20px;
-            background: rgba(255, 255, 255, 0.03);
-            border-radius: 12px;
-            padding: 15px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            margin-bottom: 24px;
         }
 
         .control-section h3 {
-            font-size: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 2px;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            color: rgba(255, 255, 255, 0.7);
-            margin-bottom: 12px;
+            color: var(--text-dim);
+            margin-bottom: 16px;
             display: flex;
             align-items: center;
             gap: 8px;
         }
 
-        .control-section h3 span {
-            font-size: 16px;
+        .control-section h3::before {
+            content: '';
+            width: 3px;
+            height: 14px;
+            background: var(--accent-cyan);
+            border-radius: 2px;
         }
 
         /* Sliders */
         .slider-control {
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
 
         .slider-header {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 8px;
+            align-items: center;
+            margin-bottom: 10px;
         }
 
         .slider-label {
-            font-size: 11px;
-            color: rgba(255, 255, 255, 0.6);
+            font-size: 12px;
+            color: var(--text);
         }
 
         .slider-value {
-            font-size: 11px;
+            font-size: 14px;
+            font-weight: 700;
+            font-family: 'Courier New', monospace;
             color: var(--accent-cyan);
-            font-weight: 600;
         }
 
         input[type="range"] {
             width: 100%;
-            height: 6px;
-            border-radius: 3px;
-            background: rgba(255, 255, 255, 0.1);
+            height: 8px;
+            border-radius: 4px;
+            background: rgba(255,255,255,0.1);
             outline: none;
             -webkit-appearance: none;
         }
 
         input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none;
-            width: 16px;
-            height: 16px;
+            width: 20px;
+            height: 20px;
             border-radius: 50%;
-            background: var(--accent-cyan);
+            background: linear-gradient(135deg, var(--accent-cyan), #0088cc);
             cursor: pointer;
-            box-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
-            transition: transform 0.2s;
+            box-shadow: 0 0 15px rgba(0,212,255,0.5);
+            transition: transform 0.2s, box-shadow 0.2s;
         }
 
         input[type="range"]::-webkit-slider-thumb:hover {
-            transform: scale(1.2);
+            transform: scale(1.15);
+            box-shadow: 0 0 25px rgba(0,212,255,0.7);
         }
 
-        /* Toggle Buttons */
-        .toggle-btn {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 10px 12px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 8px;
-            margin-bottom: 8px;
-            cursor: pointer;
-            transition: all 0.3s;
-            border: 1px solid transparent;
-        }
-
-        .toggle-btn:hover {
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        .toggle-btn.active {
-            background: rgba(0, 212, 255, 0.15);
-            border-color: var(--accent-cyan);
-        }
-
-        .toggle-btn .label {
-            font-size: 12px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .toggle-switch {
-            width: 40px;
-            height: 20px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 10px;
-            position: relative;
-            transition: all 0.3s;
-        }
-
-        .toggle-btn.active .toggle-switch {
-            background: var(--accent-cyan);
-        }
-
-        .toggle-switch::after {
-            content: '';
-            position: absolute;
-            width: 16px;
-            height: 16px;
-            background: #fff;
-            border-radius: 50%;
-            top: 2px;
-            left: 2px;
-            transition: all 0.3s;
-        }
-
-        .toggle-btn.active .toggle-switch::after {
-            left: 22px;
-        }
-
-        /* Temperature Display */
+        /* Temperature Readouts */
         .temp-grid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
         }
 
-        .temp-item {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 8px;
-            padding: 12px;
+        .temp-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 14px;
             text-align: center;
-            border: 1px solid rgba(255, 255, 255, 0.05);
             transition: all 0.3s;
-            cursor: pointer;
         }
 
-        .temp-item:hover {
-            background: rgba(255, 255, 255, 0.1);
+        .temp-card:hover {
+            background: rgba(255,255,255,0.06);
             border-color: var(--glass-border);
         }
 
-        .temp-item.selected {
-            border-color: var(--accent-cyan);
-            box-shadow: 0 0 15px rgba(0, 212, 255, 0.2);
-        }
-
-        .temp-icon {
+        .temp-card .icon {
             font-size: 24px;
-            margin-bottom: 5px;
+            margin-bottom: 6px;
         }
 
-        .temp-name {
+        .temp-card .name {
             font-size: 10px;
-            color: rgba(255, 255, 255, 0.6);
-            margin-bottom: 5px;
-        }
-
-        .temp-value {
-            font-size: 16px;
-            font-weight: 700;
-        }
-
-        .temp-value.very-hot { color: #ff3333; }
-        .temp-value.hot { color: #ff6644; }
-        .temp-value.warm { color: #ffaa00; }
-        .temp-value.cool { color: #44aaff; }
-        .temp-value.cold { color: #00ccff; }
-
-        /* Action Buttons */
-        .action-btn {
-            width: 100%;
-            padding: 12px;
-            border: none;
-            border-radius: 8px;
-            font-size: 12px;
-            font-weight: 600;
+            color: var(--text-dim);
             text-transform: uppercase;
             letter-spacing: 1px;
-            cursor: pointer;
-            transition: all 0.3s;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
 
-        .action-btn.primary {
-            background: linear-gradient(135deg, var(--accent-cyan), #0088cc);
-            color: #fff;
-            box-shadow: 0 4px 15px rgba(0, 212, 255, 0.3);
+        .temp-card .temp {
+            font-size: 18px;
+            font-weight: 700;
+            font-family: 'Courier New', monospace;
         }
 
-        .action-btn.primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0, 212, 255, 0.4);
-        }
-
-        .action-btn.secondary {
-            background: rgba(255, 255, 255, 0.1);
-            color: #fff;
-            border: 1px solid var(--glass-border);
-        }
-
-        .action-btn.secondary:hover {
-            background: rgba(255, 255, 255, 0.15);
-        }
-
-        .action-btn.danger {
-            background: linear-gradient(135deg, var(--hot-red), #cc0000);
-            color: #fff;
-        }
-
-        /* Bottom Bar */
-        #bottomBar {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 300px;
-            padding: 15px 25px;
-            background: linear-gradient(0deg, rgba(10, 22, 40, 0.95) 0%, transparent 100%);
+        /* Status Indicators */
+        .status-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
         }
 
-        .time-display {
+        .status-row:last-child {
+            border-bottom: none;
+        }
+
+        .status-label {
+            font-size: 12px;
+            color: var(--text-dim);
+        }
+
+        .status-value {
+            font-size: 14px;
+            font-weight: 600;
+            font-family: 'Courier New', monospace;
+        }
+
+        .status-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 8px;
+            display: inline-block;
+        }
+
+        .status-indicator.active {
+            background: #44ff88;
+            box-shadow: 0 0 10px rgba(68,255,136,0.5);
+            animation: pulse 2s infinite;
+        }
+
+        .status-indicator.warning {
+            background: var(--warm);
+            box-shadow: 0 0 10px rgba(255,136,0,0.5);
+        }
+
+        .status-indicator.critical {
+            background: var(--hot);
+            box-shadow: 0 0 10px rgba(255,51,51,0.5);
+            animation: pulse 0.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Time Display */
+        #time-display {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 16px 24px;
             display: flex;
             align-items: center;
             gap: 20px;
         }
 
         .time-icon {
-            font-size: 32px;
+            font-size: 36px;
         }
 
-        .time-info h3 {
-            font-size: 18px;
+        .time-text h3 {
+            font-size: 20px;
             font-weight: 600;
         }
 
-        .time-info p {
+        .time-text p {
             font-size: 12px;
-            color: rgba(255, 255, 255, 0.6);
+            color: var(--text-dim);
         }
 
-        .weather-display {
+        /* Alert System */
+        #alerts {
+            position: absolute;
+            top: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        .alert {
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            border-radius: 12px;
+            padding: 14px 24px;
             display: flex;
             align-items: center;
-            gap: 15px;
-            background: rgba(255, 255, 255, 0.05);
-            padding: 10px 20px;
-            border-radius: 25px;
-            border: 1px solid var(--glass-border);
+            gap: 12px;
+            animation: slideIn 0.3s ease-out;
+            border: 1px solid;
         }
 
-        .weather-icon {
-            font-size: 28px;
+        .alert.warning {
+            border-color: var(--warm);
+            box-shadow: 0 0 30px rgba(255,136,0,0.2);
         }
 
-        .weather-info {
-            text-align: right;
+        .alert.critical {
+            border-color: var(--hot);
+            box-shadow: 0 0 30px rgba(255,51,51,0.2);
         }
 
-        .weather-temp {
-            font-size: 18px;
-            font-weight: 600;
+        .alert.success {
+            border-color: #44ff88;
+            box-shadow: 0 0 30px rgba(68,255,136,0.2);
         }
 
-        .weather-desc {
-            font-size: 11px;
-            color: rgba(255, 255, 255, 0.6);
-        }
-
-        /* Speed Controls */
-        .speed-controls {
-            display: flex;
-            gap: 5px;
-        }
-
-        .speed-btn {
-            width: 40px;
-            height: 40px;
-            border: 1px solid var(--glass-border);
-            background: rgba(255, 255, 255, 0.05);
-            color: #fff;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 16px;
-            transition: all 0.3s;
-        }
-
-        .speed-btn:hover {
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        .speed-btn.active {
-            background: var(--accent-cyan);
-            border-color: var(--accent-cyan);
-        }
-
-        /* Tooltip */
-        #tooltip {
-            position: absolute;
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            backdrop-filter: blur(10px);
-            padding: 15px;
-            border-radius: 12px;
-            max-width: 250px;
-            pointer-events: none;
-            opacity: 0;
-            transition: opacity 0.2s;
-            z-index: 100;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-        }
-
-        #tooltip.visible {
-            opacity: 1;
-        }
-
-        #tooltip h4 {
-            font-size: 14px;
-            margin-bottom: 8px;
-            color: var(--accent-cyan);
-        }
-
-        #tooltip p {
-            font-size: 12px;
-            color: rgba(255, 255, 255, 0.7);
-            line-height: 1.5;
-        }
-
-        #tooltip .tooltip-stats {
-            margin-top: 10px;
-            padding-top: 10px;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        #tooltip .tooltip-stat {
-            display: flex;
-            justify-content: space-between;
-            font-size: 11px;
-            margin-bottom: 4px;
-        }
-
-        /* Notification */
-        #notification {
-            position: absolute;
-            top: 80px;
-            left: 50%;
-            transform: translateX(-50%) translateY(-20px);
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            padding: 15px 25px;
-            border-radius: 12px;
-            opacity: 0;
-            transition: all 0.3s;
-            z-index: 100;
-            backdrop-filter: blur(10px);
-        }
-
-        #notification.visible {
-            opacity: 1;
-            transform: translateX(-50%) translateY(0);
-        }
-
-        #notification.success { border-color: var(--success-green); }
-        #notification.warning { border-color: var(--warm-orange); }
-        #notification.error { border-color: var(--hot-red); }
-
-        /* Mini Map */
-        #miniMap {
-            position: absolute;
-            bottom: 80px;
-            left: 20px;
-            width: 180px;
-            height: 120px;
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            border-radius: 12px;
-            overflow: hidden;
-            backdrop-filter: blur(10px);
-        }
-
-        #miniMapCanvas {
-            width: 100%;
-            height: 100%;
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         /* Loading Screen */
-        #loadingScreen {
+        #loading {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: var(--primary-blue);
+            background: var(--bg-primary);
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -595,34 +414,39 @@
             transition: opacity 0.5s;
         }
 
-        #loadingScreen.hidden {
+        #loading.hidden {
             opacity: 0;
             pointer-events: none;
         }
 
-        .loading-logo {
-            font-size: 48px;
-            margin-bottom: 20px;
-            animation: pulse 2s infinite;
+        .loading-icon {
+            font-size: 64px;
+            animation: float 2s ease-in-out infinite;
         }
 
-        .loading-text {
-            font-size: 24px;
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+
+        .loading-title {
+            font-size: 36px;
             font-weight: 700;
             letter-spacing: 8px;
-            background: linear-gradient(90deg, var(--accent-cyan), var(--accent-orange));
+            margin: 20px 0;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-orange));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            margin-bottom: 30px;
         }
 
         .loading-bar {
-            width: 200px;
+            width: 300px;
             height: 4px;
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255,255,255,0.1);
             border-radius: 2px;
             overflow: hidden;
+            margin-top: 30px;
         }
 
         .loading-progress {
@@ -632,314 +456,213 @@
             transition: width 0.3s;
         }
 
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-        }
-
-        /* Animations */
-        @keyframes glow {
-            0%, 100% { box-shadow: 0 0 20px rgba(0, 212, 255, 0.3); }
-            50% { box-shadow: 0 0 40px rgba(0, 212, 255, 0.6); }
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
+        .loading-status {
+            margin-top: 20px;
+            font-size: 12px;
+            color: var(--text-dim);
+            letter-spacing: 2px;
         }
 
         /* Legend */
         .legend {
             display: flex;
             flex-wrap: wrap;
-            gap: 8px;
-            margin-top: 10px;
+            gap: 12px;
+            margin-top: 12px;
         }
 
         .legend-item {
             display: flex;
             align-items: center;
-            gap: 5px;
+            gap: 6px;
             font-size: 10px;
-            color: rgba(255, 255, 255, 0.6);
+            color: var(--text-dim);
         }
 
         .legend-color {
-            width: 12px;
-            height: 12px;
-            border-radius: 3px;
-        }
-
-        /* Responsive */
-        @media (max-width: 1200px) {
-            #sidePanel {
-                width: 260px;
-            }
-            #header, #bottomBar {
-                right: 260px;
-            }
-        }
-
-        @media (max-width: 900px) {
-            #sidePanel {
-                position: absolute;
-                right: -300px;
-                height: 100%;
-                z-index: 50;
-                transition: right 0.3s;
-            }
-            #sidePanel.open {
-                right: 0;
-            }
-            #header, #bottomBar {
-                right: 0;
-            }
-            #miniMap {
-                display: none;
-            }
+            width: 16px;
+            height: 8px;
+            border-radius: 2px;
         }
     </style>
 </head>
 <body>
     <!-- Loading Screen -->
-    <div id="loadingScreen">
-        <div class="loading-logo">🌊</div>
-        <div class="loading-text">LIVARA</div>
+    <div id="loading">
+        <div class="loading-icon">🌊</div>
+        <div class="loading-title">LIVARA</div>
+        <p style="color: var(--text-dim); letter-spacing: 3px; font-size: 12px;">HYDRO-THERMAL ENGINEERING SIMULATION</p>
         <div class="loading-bar">
-            <div class="loading-progress" id="loadingProgress"></div>
+            <div class="loading-progress" id="loading-progress"></div>
         </div>
-        <p style="margin-top: 20px; font-size: 12px; color: rgba(255,255,255,0.5);">Initializing Hydro-Thermal Systems...</p>
+        <p class="loading-status" id="loading-status">Initializing Thermal Systems...</p>
     </div>
 
-    <div id="gameContainer">
-        <div id="canvasContainer">
+    <div id="app">
+        <!-- Main Canvas -->
+        <div id="canvas-container">
             <canvas id="mainCanvas"></canvas>
 
-            <div id="uiOverlay">
-                <!-- Header -->
-                <div id="header">
-                    <div class="logo">
-                        <div class="logo-icon">🌊</div>
-                        <div class="logo-text">
-                            <h1>LIVARA</h1>
-                            <p>Hydro-Thermal Recreation Simulation</p>
-                        </div>
-                    </div>
-                    <div class="stats-bar">
-                        <div class="stat-item">
-                            <div class="stat-value hot" id="statPower">50</div>
-                            <div class="stat-label">MW Power</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-value warm" id="statHeat">110</div>
-                            <div class="stat-label">°F Source</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-value" id="statVisitors">0</div>
-                            <div class="stat-label">Visitors</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-value money" id="statRevenue">$0</div>
-                            <div class="stat-label">Revenue</div>
-                        </div>
-                    </div>
+            <!-- Top Dashboard -->
+            <div id="dashboard">
+                <div class="dash-card">
+                    <h1>LIVARA</h1>
+                    <p class="subtitle">Hydro-Thermal Recreation Simulation</p>
                 </div>
-
-                <!-- Mini Map -->
-                <div id="miniMap">
-                    <canvas id="miniMapCanvas"></canvas>
-                </div>
-
-                <!-- Bottom Bar -->
-                <div id="bottomBar">
-                    <div class="time-display">
-                        <div class="time-icon" id="timeIcon">☀️</div>
-                        <div class="time-info">
-                            <h3 id="timeDisplay">12:00 PM</h3>
-                            <p id="dateDisplay">Day 1 - Spring</p>
-                        </div>
+                <div class="dash-card metrics">
+                    <div class="metric">
+                        <div class="metric-value hot" id="metric-mw">50</div>
+                        <div class="metric-label">MW Output</div>
                     </div>
-                    <div class="speed-controls">
-                        <button class="speed-btn" data-speed="0" title="Pause">⏸</button>
-                        <button class="speed-btn active" data-speed="1" title="Normal">▶</button>
-                        <button class="speed-btn" data-speed="2" title="Fast">⏩</button>
-                        <button class="speed-btn" data-speed="4" title="Very Fast">⏭</button>
+                    <div class="metric">
+                        <div class="metric-value warm" id="metric-source-temp">110</div>
+                        <div class="metric-label">°F Source</div>
                     </div>
-                    <div class="weather-display">
-                        <div class="weather-icon" id="weatherIcon">☀️</div>
-                        <div class="weather-info">
-                            <div class="weather-temp" id="weatherTemp">72°F</div>
-                            <div class="weather-desc" id="weatherDesc">Clear Skies</div>
-                        </div>
+                    <div class="metric">
+                        <div class="metric-value cool" id="metric-pue">1.08</div>
+                        <div class="metric-label">PUE</div>
                     </div>
-                </div>
-
-                <!-- Tooltip -->
-                <div id="tooltip">
-                    <h4 id="tooltipTitle">Facility Name</h4>
-                    <p id="tooltipDesc">Description</p>
-                    <div class="tooltip-stats" id="tooltipStats"></div>
-                </div>
-
-                <!-- Notification -->
-                <div id="notification">
-                    <span id="notificationText">Notification message</span>
+                    <div class="metric">
+                        <div class="metric-value money" id="metric-revenue">$0</div>
+                        <div class="metric-label">Revenue/hr</div>
+                    </div>
                 </div>
             </div>
+
+            <!-- Time Display -->
+            <div id="time-display">
+                <div class="time-icon" id="time-icon">☀️</div>
+                <div class="time-text">
+                    <h3 id="time-value">12:00 PM</h3>
+                    <p id="time-date">Day 1 • Spring</p>
+                </div>
+            </div>
+
+            <!-- Alerts -->
+            <div id="alerts"></div>
         </div>
 
-        <!-- Side Panel -->
-        <div id="sidePanel">
+        <!-- Control Panel -->
+        <div id="control-panel">
             <div class="panel-header">
                 <h2>System Controls</h2>
             </div>
             <div class="panel-content">
                 <!-- Data Center Controls -->
                 <div class="control-section">
-                    <h3><span>🖥️</span> Data Center</h3>
+                    <h3>Data Center</h3>
                     <div class="slider-control">
                         <div class="slider-header">
                             <span class="slider-label">Server Load</span>
-                            <span class="slider-value" id="serverLoadValue">75%</span>
+                            <span class="slider-value" id="val-server-load">75%</span>
                         </div>
-                        <input type="range" id="serverLoad" min="10" max="100" value="75">
+                        <input type="range" id="slider-server-load" min="10" max="100" value="75">
                     </div>
                     <div class="slider-control">
                         <div class="slider-header">
                             <span class="slider-label">Cooling Efficiency</span>
-                            <span class="slider-value" id="coolingEffValue">85%</span>
+                            <span class="slider-value" id="val-cooling-eff">92%</span>
                         </div>
-                        <input type="range" id="coolingEff" min="50" max="100" value="85">
+                        <input type="range" id="slider-cooling-eff" min="60" max="100" value="92">
                     </div>
                 </div>
 
-                <!-- Loop Controls -->
+                <!-- Environment Controls -->
                 <div class="control-section">
-                    <h3><span>🔄</span> Loop Systems</h3>
-                    <div class="toggle-btn active" data-toggle="loopA">
-                        <span class="label"><span>💧</span> Loop A (Environmental)</span>
-                        <div class="toggle-switch"></div>
+                    <h3>Environment</h3>
+                    <div class="slider-control">
+                        <div class="slider-header">
+                            <span class="slider-label">Ambient Temperature</span>
+                            <span class="slider-value" id="val-ambient-temp">72°F</span>
+                        </div>
+                        <input type="range" id="slider-ambient-temp" min="20" max="100" value="72">
                     </div>
-                    <div class="toggle-btn active" data-toggle="loopB">
-                        <span class="label"><span>🌊</span> Loop B (Recreation)</span>
-                        <div class="toggle-switch"></div>
-                    </div>
-                    <div class="toggle-btn active" data-toggle="heatExchanger">
-                        <span class="label"><span>🔥</span> Heat Exchangers</span>
-                        <div class="toggle-switch"></div>
+                    <div class="slider-control">
+                        <div class="slider-header">
+                            <span class="slider-label">Time Speed</span>
+                            <span class="slider-value" id="val-time-speed">1x</span>
+                        </div>
+                        <input type="range" id="slider-time-speed" min="0" max="4" value="1">
                     </div>
                 </div>
 
-                <!-- Temperature Zones -->
+                <!-- Zone Temperatures -->
                 <div class="control-section">
-                    <h3><span>🌡️</span> Temperature Zones</h3>
+                    <h3>Zone Temperatures</h3>
                     <div class="temp-grid">
-                        <div class="temp-item" data-zone="spa">
-                            <div class="temp-icon">♨️</div>
-                            <div class="temp-name">Thermal Spa</div>
-                            <div class="temp-value very-hot" id="tempSpa">102°F</div>
+                        <div class="temp-card">
+                            <div class="icon">♨️</div>
+                            <div class="name">Thermal Spa</div>
+                            <div class="temp" id="temp-spa" style="color: var(--hot)">102°F</div>
                         </div>
-                        <div class="temp-item" data-zone="beach">
-                            <div class="temp-icon">🏖️</div>
-                            <div class="temp-name">Beach</div>
-                            <div class="temp-value hot" id="tempBeach">95°F</div>
+                        <div class="temp-card">
+                            <div class="icon">🏖️</div>
+                            <div class="name">Beach</div>
+                            <div class="temp" id="temp-beach" style="color: var(--warm)">95°F</div>
                         </div>
-                        <div class="temp-item" data-zone="lazy">
-                            <div class="temp-icon">🛟</div>
-                            <div class="temp-name">Lazy River</div>
-                            <div class="temp-value warm" id="tempLazy">93°F</div>
+                        <div class="temp-card">
+                            <div class="icon">🛟</div>
+                            <div class="name">Lazy River</div>
+                            <div class="temp" id="temp-lazy" style="color: var(--warm)">93°F</div>
                         </div>
-                        <div class="temp-item" data-zone="surf">
-                            <div class="temp-icon">🌊</div>
-                            <div class="temp-name">Surf Waves</div>
-                            <div class="temp-value cool" id="tempSurf">86°F</div>
+                        <div class="temp-card">
+                            <div class="icon">🌊</div>
+                            <div class="name">Surf Waves</div>
+                            <div class="temp" id="temp-surf" style="color: var(--cool)">87°F</div>
                         </div>
-                        <div class="temp-item" data-zone="rapids">
-                            <div class="temp-icon">🚣</div>
-                            <div class="temp-name">Rapids</div>
-                            <div class="temp-value cool" id="tempRapids">83°F</div>
+                        <div class="temp-card">
+                            <div class="icon">🚣</div>
+                            <div class="name">Rapids</div>
+                            <div class="temp" id="temp-rapids" style="color: var(--cool)">83°F</div>
                         </div>
-                        <div class="temp-item" data-zone="reservoir">
-                            <div class="temp-icon">💧</div>
-                            <div class="temp-name">Reservoir</div>
-                            <div class="temp-value cold" id="tempReservoir">65°F</div>
+                        <div class="temp-card">
+                            <div class="icon">💧</div>
+                            <div class="name">Reservoir</div>
+                            <div class="temp" id="temp-reservoir" style="color: var(--cold)">68°F</div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Features -->
+                <!-- System Status -->
                 <div class="control-section">
-                    <h3><span>✨</span> Special Features</h3>
-                    <div class="toggle-btn" data-toggle="fountains">
-                        <span class="label"><span>⛲</span> Bellagio Fountains</span>
-                        <div class="toggle-switch"></div>
+                    <h3>System Status</h3>
+                    <div class="status-row">
+                        <span class="status-label"><span class="status-indicator active" id="status-loop-a"></span>Loop A (Industrial)</span>
+                        <span class="status-value" id="val-loop-a-flow">2,400 GPM</span>
                     </div>
-                    <div class="toggle-btn" data-toggle="nightMode">
-                        <span class="label"><span>🌙</span> Night Lighting</span>
-                        <div class="toggle-switch"></div>
+                    <div class="status-row">
+                        <span class="status-label"><span class="status-indicator active" id="status-loop-b"></span>Loop B (Recreation)</span>
+                        <span class="status-value" id="val-loop-b-flow">1,800 GPM</span>
                     </div>
-                    <div class="toggle-btn" data-toggle="fogEffects">
-                        <span class="label"><span>🌫️</span> Fog Effects</span>
-                        <div class="toggle-switch"></div>
+                    <div class="status-row">
+                        <span class="status-label"><span class="status-indicator active" id="status-exchanger"></span>Heat Exchanger</span>
+                        <span class="status-value" id="val-exchanger-eff">85%</span>
                     </div>
-                    <div class="toggle-btn" data-toggle="energyRecovery">
-                        <span class="label"><span>⚡</span> Energy Recovery</span>
-                        <div class="toggle-switch"></div>
+                    <div class="status-row">
+                        <span class="status-label"><span class="status-indicator" id="status-emergency"></span>Emergency Cooling</span>
+                        <span class="status-value" id="val-emergency">Standby</span>
                     </div>
                 </div>
 
-                <!-- Community -->
+                <!-- Heat Legend -->
                 <div class="control-section">
-                    <h3><span>🏘️</span> Community Systems</h3>
-                    <div class="toggle-btn active" data-toggle="districtHeating">
-                        <span class="label"><span>🏠</span> District Heating</span>
-                        <div class="toggle-switch"></div>
-                    </div>
-                    <div class="toggle-btn" data-toggle="heatedSidewalks">
-                        <span class="label"><span>🚶</span> Heated Sidewalks</span>
-                        <div class="toggle-switch"></div>
-                    </div>
-                    <div class="toggle-btn active" data-toggle="agriculture">
-                        <span class="label"><span>🌱</span> Greenhouses</span>
-                        <div class="toggle-switch"></div>
-                    </div>
-                </div>
-
-                <!-- Actions -->
-                <div class="control-section">
-                    <h3><span>🎮</span> Actions</h3>
-                    <button class="action-btn primary" id="btnExpand">Expand Capacity (+50MW)</button>
-                    <button class="action-btn secondary" id="btnMarketing">Launch Marketing ($10K)</button>
-                    <button class="action-btn secondary" id="btnMaintenance">Run Maintenance</button>
-                </div>
-
-                <!-- Legend -->
-                <div class="control-section">
-                    <h3><span>🗺️</span> Map Legend</h3>
+                    <h3>Heat Legend</h3>
                     <div class="legend">
                         <div class="legend-item">
-                            <div class="legend-color" style="background: #ff4444;"></div>
+                            <div class="legend-color" style="background: linear-gradient(90deg, #ff3333, #ff6644);"></div>
                             <span>Hot (100°F+)</span>
                         </div>
                         <div class="legend-item">
-                            <div class="legend-color" style="background: #ff8c00;"></div>
-                            <span>Warm (90-100°F)</span>
+                            <div class="legend-color" style="background: linear-gradient(90deg, #ff8800, #ffaa00);"></div>
+                            <span>Warm (85-100°F)</span>
                         </div>
                         <div class="legend-item">
-                            <div class="legend-color" style="background: #44aaff;"></div>
-                            <span>Cool (80-90°F)</span>
+                            <div class="legend-color" style="background: linear-gradient(90deg, #44aaff, #66ccff);"></div>
+                            <span>Cool (70-85°F)</span>
                         </div>
                         <div class="legend-item">
-                            <div class="legend-color" style="background: #00ccff;"></div>
-                            <span>Cold (&lt;80°F)</span>
-                        </div>
-                        <div class="legend-item">
-                            <div class="legend-color" style="background: #44ff88;"></div>
-                            <span>Green Wall</span>
-                        </div>
-                        <div class="legend-item">
-                            <div class="legend-color" style="background: #888;"></div>
-                            <span>Buildings</span>
+                            <div class="legend-color" style="background: linear-gradient(90deg, #0066cc, #0088ff);"></div>
+                            <span>Cold (&lt;70°F)</span>
                         </div>
                     </div>
                 </div>
@@ -948,1163 +671,1203 @@
     </div>
 
     <script>
-        // ============================================
-        // LIVARA Hydro-Thermal Simulation Engine
-        // ============================================
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // PHASE 1: THERMODYNAMIC ENGINE - The Physics Brain
+    // ═══════════════════════════════════════════════════════════════════════════════
 
-        const canvas = document.getElementById('mainCanvas');
-        const ctx = canvas.getContext('2d');
-        const miniCanvas = document.getElementById('miniMapCanvas');
-        const miniCtx = miniCanvas.getContext('2d');
+    class ThermalSystem {
+        constructor() {
+            // Data Center State
+            this.serverLoad = 75;           // 0-100%
+            this.coolingEfficiency = 92;    // 60-100%
+            this.powerCapacity = 50;        // MW
 
-        // Game State
-        const state = {
-            // Time
-            time: 12 * 60, // Minutes since midnight (12:00 PM)
-            day: 1,
-            season: 'spring',
-            speed: 1,
-            paused: false,
+            // Environment
+            this.ambientTemp = 72;          // °F
+            this.humidity = 50;             // %
+            this.windSpeed = 5;             // mph
 
-            // Weather
-            weather: 'clear',
-            ambientTemp: 72,
-            humidity: 50,
+            // Loop A (Industrial) - Data Center to Heat Exchanger
+            this.loopA = {
+                active: true,
+                flowRate: 2400,             // GPM
+                supplyTemp: 110,            // °F (from data center)
+                returnTemp: 70,             // °F (back to data center)
+                pressure: 45                // PSI
+            };
 
-            // Data Center
-            serverLoad: 75,
-            coolingEff: 85,
-            powerCapacity: 50, // MW
-            heatOutput: 110, // °F
+            // Loop B (Recreation) - Heat Exchanger to Zones
+            this.loopB = {
+                active: true,
+                flowRate: 1800,             // GPM
+                supplyTemp: 95,             // °F (from heat exchanger)
+                returnTemp: 55,             // °F (after evaporation)
+                pressure: 30                // PSI
+            };
 
-            // Systems
-            loopA: true,
-            loopB: true,
-            heatExchanger: true,
-            fountains: false,
-            nightMode: false,
-            fogEffects: false,
-            energyRecovery: false,
-            districtHeating: true,
-            heatedSidewalks: false,
-            agriculture: true,
+            // Heat Exchanger
+            this.heatExchanger = {
+                efficiency: 0.85,           // 85% heat transfer
+                maxCapacity: 150,           // MW thermal
+                currentLoad: 0              // MW thermal
+            };
+
+            // Recreation Zones with dissipation rates
+            this.zones = {
+                spa: {
+                    name: 'Thermal Spa',
+                    targetTemp: 102,
+                    currentTemp: 102,
+                    dissipationRate: 0.02,  // Low - enclosed, wants to stay hot
+                    surfaceArea: 5000,      // sq ft
+                    volume: 50000,          // gallons
+                    visitors: 0,
+                    maxVisitors: 200,
+                    revenuePerVisitor: 45
+                },
+                beach: {
+                    name: 'Heated Beach',
+                    targetTemp: 95,
+                    currentTemp: 95,
+                    dissipationRate: 0.04,  // Medium - open but heated sand
+                    surfaceArea: 80000,
+                    volume: 200000,
+                    visitors: 0,
+                    maxVisitors: 1500,
+                    revenuePerVisitor: 25
+                },
+                lazyRiver: {
+                    name: 'Lazy River',
+                    targetTemp: 93,
+                    currentTemp: 93,
+                    dissipationRate: 0.03,  // Medium - moderate flow
+                    surfaceArea: 40000,
+                    volume: 300000,
+                    visitors: 0,
+                    maxVisitors: 800,
+                    revenuePerVisitor: 30
+                },
+                surf: {
+                    name: 'Surf Waves',
+                    targetTemp: 87,
+                    currentTemp: 87,
+                    dissipationRate: 0.06,  // High - lots of agitation
+                    surfaceArea: 25000,
+                    volume: 500000,
+                    visitors: 0,
+                    maxVisitors: 400,
+                    revenuePerVisitor: 40
+                },
+                rapids: {
+                    name: 'Whitewater Rapids',
+                    targetTemp: 83,
+                    currentTemp: 83,
+                    dissipationRate: 0.08,  // Very high - maximum surface exposure
+                    surfaceArea: 35000,
+                    volume: 400000,
+                    visitors: 0,
+                    maxVisitors: 300,
+                    revenuePerVisitor: 50
+                },
+                reservoir: {
+                    name: 'Thermal Reservoir',
+                    targetTemp: 68,
+                    currentTemp: 68,
+                    dissipationRate: 0.01,  // Very low - massive thermal mass
+                    surfaceArea: 5700000,   // 131 acres
+                    volume: 850000000,      // 850M gallons
+                    visitors: 0,
+                    maxVisitors: 0,
+                    revenuePerVisitor: 0
+                }
+            };
 
             // Economics
-            visitors: 0,
-            maxVisitors: 5000,
-            revenue: 0,
-            costs: 0,
-            money: 100000,
+            this.revenue = 0;
+            this.hourlyRevenue = 0;
+            this.operatingCost = 0;
+            this.totalVisitors = 0;
 
-            // Temperatures (°F)
-            temps: {
-                source: 110,
-                spa: 102,
-                beach: 95,
-                lazy: 93,
-                surf: 86,
-                rapids: 83,
-                reservoir: 65,
-                return: 50
-            },
+            // Emergency Systems
+            this.emergencyCooling = false;
+            this.emergencyCoolingCapacity = 20; // MW cooling
 
-            // Camera
-            camera: {
-                x: 0,
-                y: 0,
-                zoom: 1,
-                targetZoom: 1
-            },
+            // Metrics
+            this.pue = 1.08;                // Power Usage Effectiveness
+            this.waterUsage = 0;            // Gallons/hour evaporated
+        }
 
-            // Particles
-            particles: [],
-            waterParticles: [],
-            steamParticles: [],
-            fountainParticles: [],
+        // Calculate heat output based on server load
+        calculateHeatOutput() {
+            // Higher load = more heat
+            // At 100% load: 110°F output
+            // At 10% load: 75°F output
+            const minTemp = 75;
+            const maxTemp = 115;
+            const loadFactor = this.serverLoad / 100;
 
-            // Selection
-            selectedZone: null,
-            hoveredZone: null
-        };
+            return minTemp + (maxTemp - minTemp) * loadFactor;
+        }
 
-        // Facility Definitions
-        const facilities = {
-            dataCenter: {
-                x: 0.5, y: 0.85, w: 0.3, h: 0.1,
-                name: 'LIVARA Vault - Data Center',
-                desc: 'Primary heat source generating waste heat at 110°F. Scalable from 50MW to 1GW+.',
-                color: '#1a1a2e',
-                glowColor: '#ff4444'
-            },
-            greenWall: {
-                x: 0.15, y: 0.72, w: 0.7, h: 0.03,
-                name: 'The Green Wall',
-                desc: 'ICON 3D-printed acoustic barrier with vertical forest. Separates industrial and community zones.',
-                color: '#228B22',
-                glowColor: '#44ff88'
-            },
-            reservoir: {
-                x: 0.25, y: 0.3, w: 0.5, h: 0.25,
-                name: '131-Acre Reservoir',
-                desc: 'Thermal battery holding 850M gallons. Provides load balancing and thermal stability.',
-                color: '#1a5f7a',
-                glowColor: '#00aaff'
-            },
-            dam: {
-                x: 0.25, y: 0.08, w: 0.5, h: 0.04,
-                name: 'Dam & Hydroelectric',
-                desc: 'Northern boundary dam with hydroelectric generation during controlled releases.',
-                color: '#4a4a4a',
-                glowColor: '#ffaa00'
-            },
-            spa: {
-                x: 0.12, y: 0.45, w: 0.1, h: 0.12,
-                name: 'Thermal Spa & Fog Gardens',
-                desc: 'Stepped pools at 100-104°F. Winter steam creates dramatic fog effects.',
-                color: '#ff6b6b',
-                glowColor: '#ff4444',
-                temp: 'spa'
-            },
-            beach: {
-                x: 0.78, y: 0.45, w: 0.1, h: 0.12,
-                name: 'Heated Beach',
-                desc: 'PEX piping under sand maintains 95°F. Extends beach season by 3+ months.',
-                color: '#f4d03f',
-                glowColor: '#ffcc00',
-                temp: 'beach'
-            },
-            lazyRiver: {
-                x: 0.35, y: 0.58, w: 0.3, h: 0.08,
-                name: 'Thermal Lazy River',
-                desc: 'High-capacity heated circuit at 92-95°F. Float-up dining and bar access.',
-                color: '#5dade2',
-                glowColor: '#00d4ff',
-                temp: 'lazy'
-            },
-            surfWaves: {
-                x: 0.5, y: 0.45, w: 0.12, h: 0.1,
-                name: 'Eisbach-Style Surf Waves',
-                desc: 'Multiple standing waves at 85-88°F. Year-round surfing in Missouri.',
-                color: '#3498db',
-                glowColor: '#0088ff',
-                temp: 'surf'
-            },
-            rapids: {
-                x: 0.68, y: 0.58, w: 0.15, h: 0.1,
-                name: 'Whitewater Rapids',
-                desc: 'Class II-IV adjustable rapids at 82-85°F. Maximum evaporative cooling.',
-                color: '#2980b9',
-                glowColor: '#0066cc',
-                temp: 'rapids'
-            },
-            gateway: {
-                x: 0.12, y: 0.6, w: 0.08, h: 0.08,
-                name: 'Gateway Campus',
-                desc: 'Main entrance and visitor center with district heating.',
-                color: '#7f8c8d',
-                glowColor: '#aaaaaa'
-            },
-            residential: {
-                x: 0.8, y: 0.6, w: 0.08, h: 0.08,
-                name: 'Mixed-Use Residential',
-                desc: 'District heated and cooled housing with zero heating bills.',
-                color: '#9b59b6',
-                glowColor: '#aa66cc'
-            },
-            agriculture: {
-                x: 0.12, y: 0.32, w: 0.1, h: 0.1,
-                name: 'Agricultural Zone',
-                desc: 'Year-round greenhouses heated by waste heat. Farm-to-table sourcing.',
-                color: '#27ae60',
-                glowColor: '#44ff88'
-            },
-            fountains: {
-                x: 0.45, y: 0.35, w: 0.1, h: 0.08,
-                name: 'Bellagio Server Load Fountains',
-                desc: 'Fountain height responds to real-time data center load.',
-                color: '#00bcd4',
-                glowColor: '#00ffff'
-            },
-            heatExchanger: {
-                x: 0.42, y: 0.7, w: 0.16, h: 0.05,
-                name: 'Heat Exchanger Station',
-                desc: 'Titanium plate heat exchangers. Loop A and B water never mix.',
-                color: '#e74c3c',
-                glowColor: '#ff6644'
-            },
-            powerGen: {
-                x: 0.82, y: 0.85, w: 0.08, h: 0.08,
-                name: 'Power Generation',
-                desc: 'Natural gas backup power for data center operations.',
-                color: '#34495e',
-                glowColor: '#ffaa00'
+        // Calculate MW output
+        calculateMWOutput() {
+            return this.powerCapacity * (this.serverLoad / 100);
+        }
+
+        // Update heat exchanger transfer
+        updateHeatExchanger() {
+            if (!this.loopA.active || !this.loopB.active) {
+                this.heatExchanger.currentLoad = 0;
+                return;
             }
-        };
 
-        // Weather Types
-        const weatherTypes = {
-            clear: { icon: '☀️', desc: 'Clear Skies', tempMod: 0, visitorMod: 1.2 },
-            cloudy: { icon: '⛅', desc: 'Partly Cloudy', tempMod: -5, visitorMod: 1.0 },
-            rain: { icon: '🌧️', desc: 'Rainy', tempMod: -10, visitorMod: 0.6 },
-            storm: { icon: '⛈️', desc: 'Thunderstorm', tempMod: -15, visitorMod: 0.3 },
-            snow: { icon: '❄️', desc: 'Snowing', tempMod: -30, visitorMod: 0.8 },
-            fog: { icon: '🌫️', desc: 'Foggy', tempMod: -8, visitorMod: 0.9 }
-        };
+            // Heat transfer from Loop A to Loop B
+            const tempDiff = this.loopA.supplyTemp - this.loopB.returnTemp;
+            const transferredHeat = tempDiff * this.heatExchanger.efficiency;
 
-        // Seasons
-        const seasons = {
-            spring: { baseTemp: 65, visitors: 0.8 },
-            summer: { baseTemp: 85, visitors: 1.0 },
-            fall: { baseTemp: 55, visitors: 0.7 },
-            winter: { baseTemp: 35, visitors: 0.9 } // Higher due to heated water!
-        };
+            // Update Loop B supply temperature
+            this.loopB.supplyTemp = this.loopB.returnTemp + transferredHeat;
 
-        // ============================================
-        // Initialization
-        // ============================================
-
-        function init() {
-            resizeCanvas();
-            window.addEventListener('resize', resizeCanvas);
-
-            setupEventListeners();
-            simulateLoading();
+            // Calculate thermal load in MW
+            // Q = m * c * ΔT (simplified)
+            this.heatExchanger.currentLoad = (this.loopA.flowRate * tempDiff * 0.00001);
         }
 
-        function resizeCanvas() {
-            const container = document.getElementById('canvasContainer');
-            canvas.width = container.clientWidth;
-            canvas.height = container.clientHeight;
-            miniCanvas.width = 180;
-            miniCanvas.height = 120;
+        // Update zone temperatures based on heat input and dissipation
+        updateZoneTemperatures(deltaTime) {
+            const timeScale = deltaTime / 1000; // Convert to seconds
+
+            for (const [key, zone] of Object.entries(this.zones)) {
+                if (key === 'reservoir') continue; // Reservoir handled separately
+
+                // Heat input from Loop B
+                const heatInput = (this.loopB.supplyTemp - zone.currentTemp) * 0.1 * timeScale;
+
+                // Heat dissipation to environment
+                const tempDiff = zone.currentTemp - this.ambientTemp;
+                const dissipation = tempDiff * zone.dissipationRate * timeScale;
+
+                // Wind factor increases dissipation
+                const windFactor = 1 + (this.windSpeed * 0.02);
+
+                // Net temperature change
+                zone.currentTemp += heatInput - (dissipation * windFactor);
+
+                // Clamp to reasonable bounds
+                zone.currentTemp = Math.max(this.ambientTemp, Math.min(115, zone.currentTemp));
+            }
+
+            // Reservoir acts as thermal battery
+            const reservoir = this.zones.reservoir;
+            const reservoirHeatInput = (this.loopB.returnTemp - reservoir.currentTemp) * 0.005 * timeScale;
+            reservoir.currentTemp += reservoirHeatInput;
+            reservoir.currentTemp = Math.max(50, Math.min(90, reservoir.currentTemp));
+
+            // Update Loop B return temp based on reservoir
+            this.loopB.returnTemp = reservoir.currentTemp - 10;
         }
 
-        function simulateLoading() {
-            let progress = 0;
-            const progressBar = document.getElementById('loadingProgress');
-            const loadingScreen = document.getElementById('loadingScreen');
-
-            const interval = setInterval(() => {
-                progress += Math.random() * 15 + 5;
-                if (progress >= 100) {
-                    progress = 100;
-                    clearInterval(interval);
-                    setTimeout(() => {
-                        loadingScreen.classList.add('hidden');
-                        startGame();
-                    }, 500);
+        // Check for emergency conditions
+        checkEmergencyConditions() {
+            // If source temp exceeds 120°F, engage emergency cooling
+            if (this.loopA.supplyTemp > 118) {
+                if (!this.emergencyCooling) {
+                    this.emergencyCooling = true;
+                    return 'ENGAGED';
                 }
-                progressBar.style.width = progress + '%';
-            }, 200);
-        }
-
-        function startGame() {
-            // Initialize particles
-            initParticles();
-
-            // Start game loop
-            requestAnimationFrame(gameLoop);
-
-            // Show welcome notification
-            showNotification('Welcome to LIVARA! Click facilities to learn more.', 'success');
-        }
-
-        // ============================================
-        // Event Listeners
-        // ============================================
-
-        function setupEventListeners() {
-            // Canvas interactions
-            canvas.addEventListener('mousemove', handleMouseMove);
-            canvas.addEventListener('click', handleClick);
-            canvas.addEventListener('wheel', handleWheel);
-
-            // Sliders
-            document.getElementById('serverLoad').addEventListener('input', (e) => {
-                state.serverLoad = parseInt(e.target.value);
-                document.getElementById('serverLoadValue').textContent = state.serverLoad + '%';
-            });
-
-            document.getElementById('coolingEff').addEventListener('input', (e) => {
-                state.coolingEff = parseInt(e.target.value);
-                document.getElementById('coolingEffValue').textContent = state.coolingEff + '%';
-            });
-
-            // Toggle buttons
-            document.querySelectorAll('.toggle-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const toggle = btn.dataset.toggle;
-                    state[toggle] = !state[toggle];
-                    btn.classList.toggle('active', state[toggle]);
-
-                    if (toggle === 'fountains' && state.fountains) {
-                        showNotification('Bellagio Fountains activated! Watch the reservoir.', 'success');
-                    }
-                    if (toggle === 'fogEffects' && state.fogEffects) {
-                        showNotification('Fog effects enabled at Thermal Spa.', 'success');
-                    }
-                });
-            });
-
-            // Speed controls
-            document.querySelectorAll('.speed-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    document.querySelectorAll('.speed-btn').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                    const speed = parseInt(btn.dataset.speed);
-                    state.speed = speed;
-                    state.paused = speed === 0;
-                });
-            });
-
-            // Temperature zone selection
-            document.querySelectorAll('.temp-item').forEach(item => {
-                item.addEventListener('click', () => {
-                    document.querySelectorAll('.temp-item').forEach(i => i.classList.remove('selected'));
-                    item.classList.add('selected');
-                    state.selectedZone = item.dataset.zone;
-                });
-            });
-
-            // Action buttons
-            document.getElementById('btnExpand').addEventListener('click', () => {
-                if (state.money >= 50000) {
-                    state.money -= 50000;
-                    state.powerCapacity += 50;
-                    state.maxVisitors += 1000;
-                    showNotification(`Expanded to ${state.powerCapacity}MW! Max visitors: ${state.maxVisitors}`, 'success');
-                } else {
-                    showNotification('Not enough funds! Need $50,000', 'error');
-                }
-            });
-
-            document.getElementById('btnMarketing').addEventListener('click', () => {
-                if (state.money >= 10000) {
-                    state.money -= 10000;
-                    state.visitors = Math.min(state.visitors + 500, state.maxVisitors);
-                    showNotification('Marketing campaign launched! +500 visitors', 'success');
-                } else {
-                    showNotification('Not enough funds! Need $10,000', 'error');
-                }
-            });
-
-            document.getElementById('btnMaintenance').addEventListener('click', () => {
-                state.coolingEff = Math.min(100, state.coolingEff + 10);
-                document.getElementById('coolingEff').value = state.coolingEff;
-                document.getElementById('coolingEffValue').textContent = state.coolingEff + '%';
-                showNotification('Maintenance complete! Cooling efficiency improved.', 'success');
-            });
-        }
-
-        function handleMouseMove(e) {
-            const rect = canvas.getBoundingClientRect();
-            const x = (e.clientX - rect.left) / canvas.width;
-            const y = (e.clientY - rect.top) / canvas.height;
-
-            state.hoveredZone = null;
-
-            for (const [key, facility] of Object.entries(facilities)) {
-                if (x >= facility.x && x <= facility.x + facility.w &&
-                    y >= facility.y && y <= facility.y + facility.h) {
-                    state.hoveredZone = key;
-                    showTooltip(e.clientX, e.clientY, facility);
-                    canvas.style.cursor = 'pointer';
-                    return;
+            } else if (this.loopA.supplyTemp < 110) {
+                if (this.emergencyCooling) {
+                    this.emergencyCooling = false;
+                    return 'DISENGAGED';
                 }
             }
-
-            hideTooltip();
-            canvas.style.cursor = 'default';
+            return null;
         }
 
-        function handleClick(e) {
-            if (state.hoveredZone) {
-                const facility = facilities[state.hoveredZone];
-                if (facility.temp) {
-                    document.querySelectorAll('.temp-item').forEach(item => {
-                        item.classList.toggle('selected', item.dataset.zone === facility.temp);
-                    });
-                    state.selectedZone = facility.temp;
-                }
+        // Apply emergency cooling if active
+        applyEmergencyCooling() {
+            if (this.emergencyCooling) {
+                this.loopA.supplyTemp -= 5; // Emergency fans reduce temp
+                this.operatingCost += 50; // $50/tick for emergency cooling
             }
         }
 
-        function handleWheel(e) {
-            e.preventDefault();
-            const delta = e.deltaY > 0 ? -0.1 : 0.1;
-            state.camera.targetZoom = Math.max(0.5, Math.min(2, state.camera.targetZoom + delta));
-        }
+        // Calculate visitor counts based on zone temps
+        updateVisitors(hour) {
+            // Park open 9am - 10pm
+            const isOpen = hour >= 9 && hour <= 22;
+            const peakHours = hour >= 11 && hour <= 17;
+            const timeFactor = isOpen ? (peakHours ? 1.0 : 0.6) : 0.05;
 
-        // ============================================
-        // Tooltip & Notifications
-        // ============================================
+            this.totalVisitors = 0;
+            this.hourlyRevenue = 0;
 
-        function showTooltip(x, y, facility) {
-            const tooltip = document.getElementById('tooltip');
-            document.getElementById('tooltipTitle').textContent = facility.name;
-            document.getElementById('tooltipDesc').textContent = facility.desc;
+            for (const [key, zone] of Object.entries(this.zones)) {
+                if (zone.maxVisitors === 0) continue;
 
-            let statsHTML = '';
-            if (facility.temp) {
-                statsHTML += `<div class="tooltip-stat"><span>Temperature:</span><span>${state.temps[facility.temp]}°F</span></div>`;
-            }
-            if (facility === facilities.dataCenter) {
-                statsHTML += `<div class="tooltip-stat"><span>Power:</span><span>${state.powerCapacity}MW</span></div>`;
-                statsHTML += `<div class="tooltip-stat"><span>Load:</span><span>${state.serverLoad}%</span></div>`;
-                statsHTML += `<div class="tooltip-stat"><span>Heat Output:</span><span>${state.temps.source}°F</span></div>`;
-            }
-            if (facility === facilities.reservoir) {
-                statsHTML += `<div class="tooltip-stat"><span>Capacity:</span><span>850M gal</span></div>`;
-                statsHTML += `<div class="tooltip-stat"><span>Temperature:</span><span>${state.temps.reservoir}°F</span></div>`;
-            }
-            document.getElementById('tooltipStats').innerHTML = statsHTML;
+                // Comfort factor based on how close to target temp
+                const tempDiff = Math.abs(zone.currentTemp - zone.targetTemp);
+                const comfortFactor = Math.max(0, 1 - (tempDiff / 20));
 
-            tooltip.style.left = Math.min(x + 15, window.innerWidth - 280) + 'px';
-            tooltip.style.top = Math.min(y + 15, window.innerHeight - 200) + 'px';
-            tooltip.classList.add('visible');
-        }
+                // Weather factor
+                const weatherFactor = this.ambientTemp > 60 ? 1.0 : 0.7;
 
-        function hideTooltip() {
-            document.getElementById('tooltip').classList.remove('visible');
-        }
+                // Calculate visitors
+                zone.visitors = Math.floor(
+                    zone.maxVisitors * timeFactor * comfortFactor * weatherFactor
+                );
 
-        function showNotification(message, type = 'success') {
-            const notification = document.getElementById('notification');
-            document.getElementById('notificationText').textContent = message;
-            notification.className = 'visible ' + type;
-
-            setTimeout(() => {
-                notification.classList.remove('visible');
-            }, 3000);
-        }
-
-        // ============================================
-        // Particle System
-        // ============================================
-
-        function initParticles() {
-            // Water flow particles
-            for (let i = 0; i < 200; i++) {
-                state.waterParticles.push(createWaterParticle());
-            }
-
-            // Steam particles
-            for (let i = 0; i < 100; i++) {
-                state.steamParticles.push(createSteamParticle());
+                this.totalVisitors += zone.visitors;
+                this.hourlyRevenue += zone.visitors * zone.revenuePerVisitor;
             }
         }
 
-        function createWaterParticle() {
-            return {
-                x: Math.random(),
-                y: Math.random(),
-                vx: (Math.random() - 0.5) * 0.001,
-                vy: (Math.random() - 0.5) * 0.001,
-                size: Math.random() * 3 + 1,
-                alpha: Math.random() * 0.5 + 0.3,
-                temp: Math.random() * 30 + 70
-            };
-        }
+        // Calculate PUE (Power Usage Effectiveness)
+        calculatePUE() {
+            // PUE = Total Facility Power / IT Equipment Power
+            // Lower is better (1.0 is perfect)
+            const itPower = this.calculateMWOutput();
+            const coolingPower = itPower * (1 - this.coolingEfficiency / 100) * 0.5;
+            const overheadPower = itPower * 0.05;
 
-        function createSteamParticle() {
-            return {
-                x: 0.12 + Math.random() * 0.1,
-                y: 0.45 + Math.random() * 0.12,
-                vy: -Math.random() * 0.002 - 0.001,
-                size: Math.random() * 10 + 5,
-                alpha: Math.random() * 0.3 + 0.1,
-                life: 1
-            };
-        }
-
-        function createFountainParticle(baseX) {
-            const height = (state.serverLoad / 100) * 0.15;
-            return {
-                x: baseX + (Math.random() - 0.5) * 0.02,
-                y: 0.35,
-                vy: -Math.random() * 0.01 - 0.005,
-                vx: (Math.random() - 0.5) * 0.002,
-                size: Math.random() * 4 + 2,
-                alpha: 0.8,
-                life: 1,
-                maxHeight: height
-            };
-        }
-
-        function updateParticles() {
-            // Update water particles
-            state.waterParticles.forEach(p => {
-                p.x += p.vx;
-                p.y += p.vy;
-
-                // Keep in bounds
-                if (p.x < 0) p.x = 1;
-                if (p.x > 1) p.x = 0;
-                if (p.y < 0) p.y = 1;
-                if (p.y > 1) p.y = 0;
-
-                // Flow towards facilities based on loop activity
-                if (state.loopA || state.loopB) {
-                    const targetX = 0.5;
-                    const targetY = 0.5;
-                    p.vx += (targetX - p.x) * 0.00001;
-                    p.vy += (targetY - p.y) * 0.00001;
-                }
-            });
-
-            // Update steam particles
-            if (state.fogEffects) {
-                state.steamParticles.forEach(p => {
-                    p.y += p.vy;
-                    p.x += (Math.random() - 0.5) * 0.002;
-                    p.life -= 0.01;
-                    p.alpha = p.life * 0.3;
-
-                    if (p.life <= 0) {
-                        Object.assign(p, createSteamParticle());
-                    }
-                });
+            if (itPower > 0) {
+                this.pue = (itPower + coolingPower + overheadPower) / itPower;
             }
 
-            // Update fountain particles
-            if (state.fountains) {
-                // Add new particles
-                if (Math.random() < 0.3) {
-                    state.fountainParticles.push(createFountainParticle(0.5));
-                }
-
-                state.fountainParticles.forEach((p, i) => {
-                    p.y += p.vy;
-                    p.x += p.vx;
-                    p.vy += 0.0003; // Gravity
-                    p.life -= 0.02;
-
-                    if (p.life <= 0 || p.y > 0.43) {
-                        state.fountainParticles.splice(i, 1);
-                    }
-                });
-
-                // Limit particles
-                if (state.fountainParticles.length > 500) {
-                    state.fountainParticles.splice(0, 100);
-                }
+            // Heat reuse reduces effective PUE
+            if (this.loopB.active) {
+                this.pue *= 0.95; // 5% efficiency gain from heat reuse
             }
+
+            return this.pue;
         }
 
-        // ============================================
-        // Simulation Update
-        // ============================================
+        // Calculate water evaporation
+        calculateEvaporation() {
+            let totalEvaporation = 0;
 
-        function updateSimulation(deltaTime) {
-            if (state.paused) return;
-
-            const timeScale = state.speed * deltaTime / 16;
-
-            // Update time
-            state.time += timeScale;
-            if (state.time >= 24 * 60) {
-                state.time = 0;
-                state.day++;
-
-                // Season change every 30 days
-                if (state.day % 30 === 0) {
-                    const seasonOrder = ['spring', 'summer', 'fall', 'winter'];
-                    const currentIndex = seasonOrder.indexOf(state.season);
-                    state.season = seasonOrder[(currentIndex + 1) % 4];
-                    showNotification(`Season changed to ${state.season}!`, 'success');
-                }
-
-                // Random weather change
-                if (Math.random() < 0.3) {
-                    const weathers = Object.keys(weatherTypes);
-                    state.weather = weathers[Math.floor(Math.random() * weathers.length)];
-                }
+            for (const zone of Object.values(this.zones)) {
+                const tempDiff = Math.max(0, zone.currentTemp - this.ambientTemp);
+                const evapRate = tempDiff * zone.surfaceArea * 0.0001 * (1 + this.windSpeed * 0.1);
+                totalEvaporation += evapRate;
             }
 
-            // Update ambient temperature based on time and season
-            const hour = state.time / 60;
-            const timeTemp = Math.sin((hour - 6) * Math.PI / 12) * 15; // Peak at 2pm
-            const seasonBase = seasons[state.season].baseTemp;
-            const weatherMod = weatherTypes[state.weather].tempMod;
-            state.ambientTemp = seasonBase + timeTemp + weatherMod;
+            this.waterUsage = totalEvaporation;
+            return totalEvaporation;
+        }
 
-            // Update heat output based on server load
-            state.temps.source = 90 + (state.serverLoad / 100) * 30; // 90-120°F
+        // Main simulation tick
+        tick(deltaTime, gameHour) {
+            // Update source temperature from server load
+            this.loopA.supplyTemp = this.calculateHeatOutput();
 
-            // Update zone temperatures based on heat flow
-            if (state.heatExchanger && state.loopA && state.loopB) {
-                const efficiency = state.coolingEff / 100;
-                const heatTransfer = (state.temps.source - state.ambientTemp) * efficiency * 0.1;
+            // Update flow rates based on load
+            this.loopA.flowRate = 1500 + (this.serverLoad * 15);
+            this.loopB.flowRate = 1200 + (this.serverLoad * 10);
 
-                state.temps.spa = Math.min(104, 95 + heatTransfer * 0.8);
-                state.temps.beach = Math.min(98, 90 + heatTransfer * 0.5);
-                state.temps.lazy = Math.min(95, 88 + heatTransfer * 0.4);
-                state.temps.surf = Math.min(90, 82 + heatTransfer * 0.3);
-                state.temps.rapids = Math.min(88, 78 + heatTransfer * 0.2);
+            // Heat exchanger transfer
+            this.updateHeatExchanger();
 
-                // Reservoir temperature affected by ambient
-                state.temps.reservoir = 50 + (state.ambientTemp - 50) * 0.3;
-            }
+            // Check emergency conditions
+            const emergencyStatus = this.checkEmergencyConditions();
 
-            // Update visitors based on time, weather, and season
-            const isOpen = hour >= 9 && hour <= 22; // 9am - 10pm
-            const weatherMult = weatherTypes[state.weather].visitorMod;
-            const seasonMult = seasons[state.season].visitors;
-            const timeMult = isOpen ? (hour >= 11 && hour <= 17 ? 1.0 : 0.6) : 0.1;
+            // Apply emergency cooling if needed
+            this.applyEmergencyCooling();
 
-            const targetVisitors = state.maxVisitors * weatherMult * seasonMult * timeMult * (state.serverLoad / 100);
-            state.visitors += (targetVisitors - state.visitors) * 0.01 * timeScale;
-            state.visitors = Math.max(0, Math.round(state.visitors));
+            // Update zone temperatures
+            this.updateZoneTemperatures(deltaTime);
 
-            // Calculate revenue
-            const hourlyRevenue = state.visitors * 0.5 * (state.speed / 60); // $30/visitor/day = $0.5/visitor/hr
-            state.revenue += hourlyRevenue * timeScale;
-            state.money += hourlyRevenue * timeScale;
+            // Update visitors and revenue
+            this.updateVisitors(gameHour);
+
+            // Calculate metrics
+            this.calculatePUE();
+            this.calculateEvaporation();
 
             // Operating costs
-            const hourlyCost = (state.powerCapacity * 10 + state.visitors * 0.1) * (state.speed / 60);
-            state.costs += hourlyCost * timeScale;
-            state.money -= hourlyCost * timeScale;
+            this.operatingCost = this.calculateMWOutput() * 10; // $10/MW/tick
+            this.revenue += (this.hourlyRevenue - this.operatingCost) * (deltaTime / 3600000);
 
-            // Update UI elements
-            updateUI();
+            return emergencyStatus;
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // PHASE 2: VISUALIZATION CORE - The Renderer
+    // ═══════════════════════════════════════════════════════════════════════════════
+
+    class Renderer {
+        constructor(canvas) {
+            this.canvas = canvas;
+            this.ctx = canvas.getContext('2d');
+            this.width = 0;
+            this.height = 0;
+
+            // Camera
+            this.camera = {
+                x: 0,
+                y: 0,
+                zoom: 1
+            };
+
+            // Time of day (0-24)
+            this.timeOfDay = 12;
+
+            // Animation state
+            this.animTime = 0;
+
+            // Particle systems
+            this.particles = {
+                steam: [],
+                fountain: [],
+                flow: []
+            };
+
+            // Facility layout (normalized coordinates)
+            this.facilities = {
+                dam: { x: 0.5, y: 0.08, w: 0.6, h: 0.06 },
+                reservoir: { x: 0.5, y: 0.32, w: 0.55, h: 0.28 },
+                spa: { x: 0.15, y: 0.42, w: 0.12, h: 0.14 },
+                beach: { x: 0.85, y: 0.42, w: 0.12, h: 0.14 },
+                lazyRiver: { x: 0.5, y: 0.58, w: 0.35, h: 0.08 },
+                surf: { x: 0.35, y: 0.48, w: 0.12, h: 0.1 },
+                rapids: { x: 0.65, y: 0.48, w: 0.12, h: 0.1 },
+                greenWall: { x: 0.5, y: 0.72, w: 0.8, h: 0.03 },
+                heatExchanger: { x: 0.5, y: 0.78, w: 0.2, h: 0.06 },
+                dataCenter: { x: 0.5, y: 0.9, w: 0.4, h: 0.08 }
+            };
+
+            this.resize();
         }
 
-        function updateUI() {
-            // Header stats
-            document.getElementById('statPower').textContent = state.powerCapacity;
-            document.getElementById('statHeat').textContent = Math.round(state.temps.source);
-            document.getElementById('statVisitors').textContent = state.visitors.toLocaleString();
-            document.getElementById('statRevenue').textContent = '$' + Math.round(state.revenue).toLocaleString();
-
-            // Time display
-            const hour = Math.floor(state.time / 60);
-            const minute = Math.floor(state.time % 60);
-            const ampm = hour >= 12 ? 'PM' : 'AM';
-            const displayHour = hour % 12 || 12;
-            document.getElementById('timeDisplay').textContent =
-                `${displayHour}:${minute.toString().padStart(2, '0')} ${ampm}`;
-            document.getElementById('dateDisplay').textContent =
-                `Day ${state.day} - ${state.season.charAt(0).toUpperCase() + state.season.slice(1)}`;
-
-            // Time icon
-            const timeIcon = hour >= 6 && hour < 18 ? '☀️' : '🌙';
-            document.getElementById('timeIcon').textContent = timeIcon;
-
-            // Weather
-            const weather = weatherTypes[state.weather];
-            document.getElementById('weatherIcon').textContent = weather.icon;
-            document.getElementById('weatherTemp').textContent = Math.round(state.ambientTemp) + '°F';
-            document.getElementById('weatherDesc').textContent = weather.desc;
-
-            // Temperature displays
-            document.getElementById('tempSpa').textContent = Math.round(state.temps.spa) + '°F';
-            document.getElementById('tempBeach').textContent = Math.round(state.temps.beach) + '°F';
-            document.getElementById('tempLazy').textContent = Math.round(state.temps.lazy) + '°F';
-            document.getElementById('tempSurf').textContent = Math.round(state.temps.surf) + '°F';
-            document.getElementById('tempRapids').textContent = Math.round(state.temps.rapids) + '°F';
-            document.getElementById('tempReservoir').textContent = Math.round(state.temps.reservoir) + '°F';
+        resize() {
+            const container = this.canvas.parentElement;
+            this.width = container.clientWidth;
+            this.height = container.clientHeight;
+            this.canvas.width = this.width;
+            this.canvas.height = this.height;
         }
 
-        // ============================================
-        // Rendering
-        // ============================================
-
-        function render() {
-            const w = canvas.width;
-            const h = canvas.height;
-
-            // Clear canvas
-            ctx.clearRect(0, 0, w, h);
-
-            // Draw background gradient based on time
-            drawBackground(w, h);
-
-            // Draw grid
-            drawGrid(w, h);
-
-            // Draw water connections (pipes/channels)
-            drawConnections(w, h);
-
-            // Draw facilities
-            drawFacilities(w, h);
-
-            // Draw particles
-            drawParticles(w, h);
-
-            // Draw flow arrows
-            drawFlowArrows(w, h);
-
-            // Draw mini map
-            drawMiniMap();
+        // Get color for temperature
+        getTempColor(temp, alpha = 1) {
+            if (temp >= 100) {
+                return `rgba(255, 51, 51, ${alpha})`; // Hot red
+            } else if (temp >= 90) {
+                const t = (temp - 90) / 10;
+                const r = 255;
+                const g = Math.floor(51 + (85 - 51) * (1 - t));
+                return `rgba(${r}, ${g}, 0, ${alpha})`; // Orange to red
+            } else if (temp >= 80) {
+                const t = (temp - 80) / 10;
+                const r = Math.floor(68 + (255 - 68) * t);
+                const g = Math.floor(170 + (136 - 170) * t);
+                return `rgba(${r}, ${g}, 0, ${alpha})`; // Yellow to orange
+            } else if (temp >= 70) {
+                const t = (temp - 70) / 10;
+                return `rgba(68, ${Math.floor(170 + 85 * (1-t))}, 255, ${alpha})`; // Cool blue
+            } else {
+                return `rgba(0, 102, 204, ${alpha})`; // Cold blue
+            }
         }
 
-        function drawBackground(w, h) {
-            const hour = state.time / 60;
-            let skyColor1, skyColor2;
+        // Get facility screen coordinates
+        getFacilityRect(key) {
+            const f = this.facilities[key];
+            return {
+                x: (f.x - f.w/2) * this.width,
+                y: f.y * this.height,
+                w: f.w * this.width,
+                h: f.h * this.height,
+                cx: f.x * this.width,
+                cy: (f.y + f.h/2) * this.height
+            };
+        }
 
-            if (hour >= 6 && hour < 8) {
+        // Draw sky gradient based on time
+        drawSky() {
+            const hour = this.timeOfDay;
+            let colors;
+
+            if (hour >= 5 && hour < 7) {
                 // Sunrise
-                skyColor1 = '#ff7b54';
-                skyColor2 = '#1a2d4a';
-            } else if (hour >= 8 && hour < 18) {
+                colors = ['#1a1a2e', '#ff7b54', '#ffb347'];
+            } else if (hour >= 7 && hour < 17) {
                 // Day
-                skyColor1 = '#87ceeb';
-                skyColor2 = '#1a2d4a';
-            } else if (hour >= 18 && hour < 20) {
+                colors = ['#1a3a5c', '#4a90b8', '#87ceeb'];
+            } else if (hour >= 17 && hour < 20) {
                 // Sunset
-                skyColor1 = '#ff6b6b';
-                skyColor2 = '#1a2d4a';
+                colors = ['#1a1a2e', '#ff6b6b', '#ffa07a'];
             } else {
                 // Night
-                skyColor1 = '#0a1628';
-                skyColor2 = '#1a2d4a';
+                colors = ['#0a0a15', '#0d1525', '#1a2035'];
             }
 
-            const gradient = ctx.createLinearGradient(0, 0, 0, h);
-            gradient.addColorStop(0, skyColor1);
-            gradient.addColorStop(1, skyColor2);
-            ctx.fillStyle = gradient;
-            ctx.fillRect(0, 0, w, h);
+            const gradient = this.ctx.createLinearGradient(0, 0, 0, this.height);
+            gradient.addColorStop(0, colors[0]);
+            gradient.addColorStop(0.5, colors[1]);
+            gradient.addColorStop(1, colors[2]);
+
+            this.ctx.fillStyle = gradient;
+            this.ctx.fillRect(0, 0, this.width, this.height);
 
             // Stars at night
-            if (hour < 6 || hour >= 20) {
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
-                for (let i = 0; i < 100; i++) {
-                    const x = (Math.sin(i * 123.456) * 0.5 + 0.5) * w;
-                    const y = (Math.cos(i * 789.012) * 0.5 + 0.5) * h * 0.5;
-                    const size = Math.random() * 2 + 0.5;
-                    ctx.beginPath();
-                    ctx.arc(x, y, size, 0, Math.PI * 2);
-                    ctx.fill();
-                }
+            if (hour < 5 || hour >= 20) {
+                this.drawStars();
             }
         }
 
-        function drawGrid(w, h) {
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
-            ctx.lineWidth = 1;
-
-            const gridSize = 50;
-            for (let x = 0; x < w; x += gridSize) {
-                ctx.beginPath();
-                ctx.moveTo(x, 0);
-                ctx.lineTo(x, h);
-                ctx.stroke();
+        drawStars() {
+            this.ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+            for (let i = 0; i < 150; i++) {
+                const x = (Math.sin(i * 123.456 + i) * 0.5 + 0.5) * this.width;
+                const y = (Math.cos(i * 789.012) * 0.5 + 0.5) * this.height * 0.4;
+                const twinkle = 0.5 + Math.sin(this.animTime * 2 + i) * 0.5;
+                this.ctx.globalAlpha = twinkle * 0.8;
+                this.ctx.beginPath();
+                this.ctx.arc(x, y, Math.random() * 1.5 + 0.5, 0, Math.PI * 2);
+                this.ctx.fill();
             }
-            for (let y = 0; y < h; y += gridSize) {
-                ctx.beginPath();
-                ctx.moveTo(0, y);
-                ctx.lineTo(w, y);
-                ctx.stroke();
-            }
+            this.ctx.globalAlpha = 1;
         }
 
-        function drawConnections(w, h) {
-            if (!state.loopA && !state.loopB) return;
+        // Draw terrain/ground
+        drawTerrain() {
+            // Ground gradient
+            const groundY = this.height * 0.65;
+            const gradient = this.ctx.createLinearGradient(0, groundY, 0, this.height);
+            gradient.addColorStop(0, '#1a3d2e');
+            gradient.addColorStop(1, '#0d2818');
 
-            ctx.lineWidth = 4;
-            ctx.lineCap = 'round';
+            this.ctx.fillStyle = gradient;
+            this.ctx.fillRect(0, groundY, this.width, this.height - groundY);
+        }
 
-            // Loop A connections (environmental - blue)
-            if (state.loopA) {
-                ctx.strokeStyle = 'rgba(0, 170, 255, 0.4)';
-                ctx.setLineDash([10, 5]);
+        // Draw the dam (north)
+        drawDam(thermal) {
+            const rect = this.getFacilityRect('dam');
 
-                // Data center to heat exchanger
-                drawLine(0.5, 0.85, 0.5, 0.72, w, h);
+            // Dam structure
+            const gradient = this.ctx.createLinearGradient(rect.x, rect.y, rect.x, rect.y + rect.h);
+            gradient.addColorStop(0, '#5a5a6a');
+            gradient.addColorStop(0.5, '#4a4a5a');
+            gradient.addColorStop(1, '#3a3a4a');
 
-                // Heat exchanger to reservoir
-                drawLine(0.5, 0.7, 0.5, 0.55, w, h);
+            this.ctx.fillStyle = gradient;
+            this.ctx.beginPath();
+            this.ctx.moveTo(rect.x, rect.y + rect.h);
+            this.ctx.lineTo(rect.x + rect.w * 0.1, rect.y);
+            this.ctx.lineTo(rect.x + rect.w * 0.9, rect.y);
+            this.ctx.lineTo(rect.x + rect.w, rect.y + rect.h);
+            this.ctx.closePath();
+            this.ctx.fill();
 
-                // Reservoir circulation
-                drawLine(0.25, 0.42, 0.75, 0.42, w, h);
+            // Dam segments
+            this.ctx.strokeStyle = '#2a2a3a';
+            this.ctx.lineWidth = 2;
+            for (let i = 1; i < 8; i++) {
+                const x = rect.x + (rect.w / 8) * i;
+                this.ctx.beginPath();
+                this.ctx.moveTo(x, rect.y + 5);
+                this.ctx.lineTo(x, rect.y + rect.h);
+                this.ctx.stroke();
             }
 
-            // Loop B connections (recreation - cyan)
-            if (state.loopB) {
-                ctx.strokeStyle = 'rgba(0, 212, 255, 0.5)';
-                ctx.setLineDash([5, 3]);
-
-                // Heat exchanger to spa
-                drawLine(0.42, 0.72, 0.17, 0.51, w, h);
-
-                // Spa to lazy river
-                drawLine(0.17, 0.57, 0.35, 0.62, w, h);
-
-                // Lazy river to surf
-                drawLine(0.5, 0.62, 0.5, 0.55, w, h);
-
-                // Surf to rapids
-                drawLine(0.56, 0.5, 0.68, 0.58, w, h);
-
-                // Rapids to beach
-                drawLine(0.75, 0.63, 0.83, 0.51, w, h);
+            // Hydroelectric glow
+            if (this.timeOfDay < 6 || this.timeOfDay > 18) {
+                this.ctx.fillStyle = 'rgba(255, 200, 0, 0.3)';
+                this.ctx.fillRect(rect.x + rect.w * 0.4, rect.y, rect.w * 0.2, rect.h);
             }
 
-            ctx.setLineDash([]);
+            // Label
+            this.drawLabel(rect.cx, rect.y - 10, 'DAM & HYDRO', '#aaa');
         }
 
-        function drawLine(x1, y1, x2, y2, w, h) {
-            ctx.beginPath();
-            ctx.moveTo(x1 * w, y1 * h);
-            ctx.lineTo(x2 * w, y2 * h);
-            ctx.stroke();
-        }
+        // Draw reservoir with animated water
+        drawReservoir(thermal) {
+            const rect = this.getFacilityRect('reservoir');
+            const temp = thermal.zones.reservoir.currentTemp;
 
-        function drawFacilities(w, h) {
-            for (const [key, facility] of Object.entries(facilities)) {
-                const x = facility.x * w;
-                const y = facility.y * h;
-                const fw = facility.w * w;
-                const fh = facility.h * h;
+            // Water base
+            const waterGradient = this.ctx.createRadialGradient(
+                rect.cx, rect.cy, 0,
+                rect.cx, rect.cy, rect.w * 0.6
+            );
+            waterGradient.addColorStop(0, this.getTempColor(temp + 10, 0.9));
+            waterGradient.addColorStop(0.7, this.getTempColor(temp, 0.8));
+            waterGradient.addColorStop(1, this.getTempColor(temp - 10, 0.7));
 
-                const isHovered = state.hoveredZone === key;
-                const isSelected = state.selectedZone && facility.temp === state.selectedZone;
+            this.ctx.fillStyle = waterGradient;
+            this.ctx.beginPath();
+            this.ctx.ellipse(rect.cx, rect.cy, rect.w/2, rect.h/2, 0, 0, Math.PI * 2);
+            this.ctx.fill();
 
-                // Glow effect
-                if (isHovered || isSelected) {
-                    ctx.shadowColor = facility.glowColor;
-                    ctx.shadowBlur = 30;
-                }
+            // Animated waves
+            this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+            this.ctx.lineWidth = 2;
+            for (let i = 0; i < 6; i++) {
+                this.ctx.beginPath();
+                for (let x = rect.x; x < rect.x + rect.w; x += 5) {
+                    const normalX = (x - rect.x) / rect.w;
+                    const waveY = Math.sin((normalX * 10) + this.animTime * 2 + i) * 4;
+                    const y = rect.y + rect.h * 0.2 + i * (rect.h * 0.12) + waveY;
 
-                // Special rendering for different facility types
-                if (key === 'reservoir') {
-                    drawReservoir(x, y, fw, fh, facility);
-                } else if (key === 'greenWall') {
-                    drawGreenWall(x, y, fw, fh, facility);
-                } else if (key === 'dam') {
-                    drawDam(x, y, fw, fh, facility);
-                } else if (key === 'dataCenter') {
-                    drawDataCenter(x, y, fw, fh, facility);
-                } else {
-                    drawStandardFacility(x, y, fw, fh, facility, key);
-                }
-
-                ctx.shadowBlur = 0;
-
-                // Label
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-                ctx.font = '10px system-ui';
-                ctx.textAlign = 'center';
-
-                // Get short name
-                const shortName = getShortName(key);
-                ctx.fillText(shortName, x + fw / 2, y + fh / 2 + 4);
-            }
-        }
-
-        function getShortName(key) {
-            const names = {
-                dataCenter: '🖥️ Data Center',
-                greenWall: '🌲 Green Wall',
-                reservoir: '💧 Reservoir',
-                dam: '⚡ Dam',
-                spa: '♨️ Spa',
-                beach: '🏖️ Beach',
-                lazyRiver: '🛟 Lazy River',
-                surfWaves: '🌊 Surf',
-                rapids: '🚣 Rapids',
-                gateway: '🏛️ Gateway',
-                residential: '🏘️ Residential',
-                agriculture: '🌱 Agriculture',
-                fountains: '⛲ Fountains',
-                heatExchanger: '🔥 Heat Exchange',
-                powerGen: '⚡ Power'
-            };
-            return names[key] || key;
-        }
-
-        function drawReservoir(x, y, w, h, facility) {
-            // Water gradient
-            const gradient = ctx.createLinearGradient(x, y, x, y + h);
-            gradient.addColorStop(0, '#1a5f7a');
-            gradient.addColorStop(1, '#0d3d4d');
-
-            ctx.fillStyle = gradient;
-            ctx.beginPath();
-            ctx.roundRect(x, y, w, h, 10);
-            ctx.fill();
-
-            // Animated water waves
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
-            ctx.lineWidth = 2;
-            const time = Date.now() / 1000;
-            for (let i = 0; i < 5; i++) {
-                ctx.beginPath();
-                for (let wx = 0; wx < w; wx += 5) {
-                    const wy = Math.sin((wx + time * 50 + i * 20) * 0.05) * 3;
-                    if (wx === 0) {
-                        ctx.moveTo(x + wx, y + h * 0.3 + i * 15 + wy);
+                    if (x === rect.x) {
+                        this.ctx.moveTo(x + 20, y);
                     } else {
-                        ctx.lineTo(x + wx, y + h * 0.3 + i * 15 + wy);
+                        this.ctx.lineTo(x, y);
                     }
                 }
-                ctx.stroke();
+                this.ctx.stroke();
             }
+
+            // Reservoir border glow
+            this.ctx.strokeStyle = this.getTempColor(temp, 0.5);
+            this.ctx.lineWidth = 3;
+            this.ctx.beginPath();
+            this.ctx.ellipse(rect.cx, rect.cy, rect.w/2, rect.h/2, 0, 0, Math.PI * 2);
+            this.ctx.stroke();
+
+            // Label
+            this.drawLabel(rect.cx, rect.y - 15, '131-ACRE RESERVOIR', '#88ccff');
+            this.drawLabel(rect.cx, rect.y + rect.h + 20, `${Math.round(temp)}°F • 850M GAL`, '#666');
+        }
+
+        // Draw Bellagio-style fountains
+        drawFountains(thermal) {
+            const rect = this.getFacilityRect('reservoir');
+            const serverLoad = thermal.serverLoad;
+            const maxHeight = rect.h * 0.8;
+
+            // Number of fountains based on load
+            const fountainCount = Math.floor(serverLoad / 15) + 3;
+
+            for (let i = 0; i < fountainCount; i++) {
+                const x = rect.cx + (i - fountainCount/2 + 0.5) * 40;
+                const height = maxHeight * (0.3 + (serverLoad/100) * 0.7) * (0.7 + Math.sin(this.animTime * 3 + i) * 0.3);
+                const baseY = rect.cy;
+
+                // Fountain spray
+                const gradient = this.ctx.createLinearGradient(x, baseY, x, baseY - height);
+                gradient.addColorStop(0, 'rgba(200, 230, 255, 0.8)');
+                gradient.addColorStop(0.5, 'rgba(150, 200, 255, 0.5)');
+                gradient.addColorStop(1, 'rgba(100, 180, 255, 0.1)');
+
+                this.ctx.fillStyle = gradient;
+                this.ctx.beginPath();
+                this.ctx.moveTo(x - 3, baseY);
+                this.ctx.quadraticCurveTo(x - 8, baseY - height * 0.7, x, baseY - height);
+                this.ctx.quadraticCurveTo(x + 8, baseY - height * 0.7, x + 3, baseY);
+                this.ctx.closePath();
+                this.ctx.fill();
+
+                // Spray particles at top
+                this.ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+                for (let j = 0; j < 5; j++) {
+                    const px = x + (Math.random() - 0.5) * 20;
+                    const py = baseY - height + Math.random() * 15;
+                    this.ctx.beginPath();
+                    this.ctx.arc(px, py, 2, 0, Math.PI * 2);
+                    this.ctx.fill();
+                }
+            }
+
+            // Night lighting on fountains
+            if (this.timeOfDay < 6 || this.timeOfDay > 19) {
+                const colors = ['#ff0066', '#00ffcc', '#ffcc00', '#ff6600'];
+                for (let i = 0; i < fountainCount; i++) {
+                    const x = rect.cx + (i - fountainCount/2 + 0.5) * 40;
+                    const color = colors[i % colors.length];
+
+                    this.ctx.fillStyle = color.replace(')', ', 0.2)').replace('rgb', 'rgba').replace('#', 'rgba(');
+                    // Simple colored glow
+                    const glowGradient = this.ctx.createRadialGradient(x, rect.cy - 30, 0, x, rect.cy - 30, 50);
+                    glowGradient.addColorStop(0, color + '44');
+                    glowGradient.addColorStop(1, 'transparent');
+                    this.ctx.fillStyle = glowGradient;
+                    this.ctx.fillRect(x - 50, rect.cy - 80, 100, 100);
+                }
+            }
+        }
+
+        // Draw a recreation zone
+        drawZone(key, thermal, icon, label) {
+            const rect = this.getFacilityRect(key);
+            const zone = thermal.zones[key];
+            const temp = zone.currentTemp;
+
+            // Zone background with temperature color
+            const gradient = this.ctx.createLinearGradient(rect.x, rect.y, rect.x, rect.y + rect.h);
+            gradient.addColorStop(0, this.getTempColor(temp, 0.7));
+            gradient.addColorStop(1, this.getTempColor(temp - 5, 0.5));
+
+            this.ctx.fillStyle = gradient;
+            this.ctx.beginPath();
+            this.ctx.roundRect(rect.x, rect.y, rect.w, rect.h, 10);
+            this.ctx.fill();
 
             // Border
-            ctx.strokeStyle = facility.glowColor;
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.roundRect(x, y, w, h, 10);
-            ctx.stroke();
+            this.ctx.strokeStyle = this.getTempColor(temp, 0.8);
+            this.ctx.lineWidth = 2;
+            this.ctx.stroke();
+
+            // Water animation inside
+            this.ctx.save();
+            this.ctx.clip();
+
+            this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+            this.ctx.lineWidth = 1;
+            for (let i = 0; i < 3; i++) {
+                this.ctx.beginPath();
+                for (let x = rect.x; x < rect.x + rect.w; x += 3) {
+                    const waveY = Math.sin((x * 0.05) + this.animTime * 2 + i * 2) * 3;
+                    const y = rect.y + rect.h * 0.3 + i * 12 + waveY;
+                    if (x === rect.x) {
+                        this.ctx.moveTo(x, y);
+                    } else {
+                        this.ctx.lineTo(x, y);
+                    }
+                }
+                this.ctx.stroke();
+            }
+            this.ctx.restore();
+
+            // Icon and label
+            this.ctx.font = '24px Arial';
+            this.ctx.textAlign = 'center';
+            this.ctx.fillStyle = 'white';
+            this.ctx.fillText(icon, rect.cx, rect.cy);
+
+            this.drawLabel(rect.cx, rect.y - 8, label, '#fff');
+            this.drawLabel(rect.cx, rect.y + rect.h + 15, `${Math.round(temp)}°F`, this.getTempColor(temp));
         }
 
-        function drawGreenWall(x, y, w, h, facility) {
-            // Main wall
-            const gradient = ctx.createLinearGradient(x, y, x, y + h);
+        // Draw lazy river with flow
+        drawLazyRiver(thermal) {
+            const rect = this.getFacilityRect('lazyRiver');
+            const zone = thermal.zones.lazyRiver;
+            const temp = zone.currentTemp;
+
+            // River path (curved)
+            this.ctx.fillStyle = this.getTempColor(temp, 0.7);
+            this.ctx.beginPath();
+            this.ctx.moveTo(rect.x, rect.cy);
+            this.ctx.quadraticCurveTo(rect.x + rect.w * 0.25, rect.y, rect.cx, rect.cy);
+            this.ctx.quadraticCurveTo(rect.x + rect.w * 0.75, rect.y + rect.h, rect.x + rect.w, rect.cy);
+            this.ctx.quadraticCurveTo(rect.x + rect.w * 0.75, rect.y + rect.h + 10, rect.cx, rect.cy + 5);
+            this.ctx.quadraticCurveTo(rect.x + rect.w * 0.25, rect.y - 5, rect.x, rect.cy);
+            this.ctx.fill();
+
+            // Flow particles
+            this.ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+            for (let i = 0; i < 15; i++) {
+                const progress = ((this.animTime * 0.3 + i * 0.07) % 1);
+                const x = rect.x + progress * rect.w;
+                const y = rect.cy + Math.sin(progress * Math.PI * 2) * 10;
+                this.ctx.beginPath();
+                this.ctx.arc(x, y, 3, 0, Math.PI * 2);
+                this.ctx.fill();
+            }
+
+            // Label
+            this.drawLabel(rect.cx, rect.y - 10, 'LAZY RIVER', '#fff');
+            this.drawLabel(rect.cx, rect.y + rect.h + 15, `${Math.round(temp)}°F`, this.getTempColor(temp));
+        }
+
+        // Draw Green Wall
+        drawGreenWall(thermal) {
+            const rect = this.getFacilityRect('greenWall');
+
+            // Wall base
+            const gradient = this.ctx.createLinearGradient(rect.x, rect.y, rect.x, rect.y + rect.h);
             gradient.addColorStop(0, '#2d5a27');
-            gradient.addColorStop(0.5, '#228B22');
-            gradient.addColorStop(1, '#1a4d1a');
+            gradient.addColorStop(0.5, '#1e7a1e');
+            gradient.addColorStop(1, '#145214');
 
-            ctx.fillStyle = gradient;
-            ctx.fillRect(x, y, w, h);
+            this.ctx.fillStyle = gradient;
+            this.ctx.fillRect(rect.x, rect.y, rect.w, rect.h);
 
-            // Trees/vegetation
-            ctx.fillStyle = '#44aa44';
-            const treeCount = Math.floor(w / 20);
+            // Tree/vegetation silhouettes
+            this.ctx.fillStyle = '#44aa44';
+            const treeCount = Math.floor(rect.w / 25);
             for (let i = 0; i < treeCount; i++) {
-                const tx = x + (i + 0.5) * (w / treeCount);
-                const ty = y + h / 2;
-                const th = h * 0.8 + Math.sin(i * 1.5) * h * 0.2;
+                const tx = rect.x + (i + 0.5) * (rect.w / treeCount);
+                const th = rect.h * (1.5 + Math.sin(i * 1.3) * 0.5);
 
-                ctx.beginPath();
-                ctx.arc(tx, ty - th * 0.3, th * 0.4, 0, Math.PI * 2);
-                ctx.fill();
+                this.ctx.beginPath();
+                this.ctx.arc(tx, rect.y - th * 0.3, th * 0.4, 0, Math.PI * 2);
+                this.ctx.fill();
             }
+
+            // Night projection mapping
+            if (this.timeOfDay < 6 || this.timeOfDay > 19) {
+                const hue = (this.animTime * 30) % 360;
+                this.ctx.fillStyle = `hsla(${hue}, 70%, 50%, 0.3)`;
+                this.ctx.fillRect(rect.x, rect.y - rect.h, rect.w, rect.h * 2);
+            }
+
+            this.drawLabel(rect.cx, rect.y - 25, 'THE GREEN WALL', '#44ff88');
         }
 
-        function drawDam(x, y, w, h, facility) {
-            ctx.fillStyle = '#5a5a5a';
-            ctx.fillRect(x, y, w, h);
+        // Draw Heat Exchanger
+        drawHeatExchanger(thermal) {
+            const rect = this.getFacilityRect('heatExchanger');
 
-            // Dam structure lines
-            ctx.strokeStyle = '#3a3a3a';
-            ctx.lineWidth = 2;
-            for (let i = 0; i < 10; i++) {
-                ctx.beginPath();
-                ctx.moveTo(x + i * (w / 10), y);
-                ctx.lineTo(x + i * (w / 10), y + h);
-                ctx.stroke();
-            }
-
-            // Power generation glow
-            if (state.energyRecovery) {
-                ctx.fillStyle = 'rgba(255, 200, 0, 0.3)';
-                ctx.fillRect(x + w * 0.4, y, w * 0.2, h);
-            }
-        }
-
-        function drawDataCenter(x, y, w, h, facility) {
             // Building
-            const gradient = ctx.createLinearGradient(x, y, x, y + h);
+            const gradient = this.ctx.createLinearGradient(rect.x, rect.y, rect.x, rect.y + rect.h);
+            gradient.addColorStop(0, '#4a3a2a');
+            gradient.addColorStop(1, '#3a2a1a');
+
+            this.ctx.fillStyle = gradient;
+            this.ctx.beginPath();
+            this.ctx.roundRect(rect.x, rect.y, rect.w, rect.h, 5);
+            this.ctx.fill();
+
+            // Heat glow
+            const efficiency = thermal.heatExchanger.efficiency;
+            const glowGradient = this.ctx.createRadialGradient(rect.cx, rect.cy, 0, rect.cx, rect.cy, rect.w * 0.6);
+            glowGradient.addColorStop(0, `rgba(255, 100, 50, ${efficiency * 0.5})`);
+            glowGradient.addColorStop(1, 'transparent');
+            this.ctx.fillStyle = glowGradient;
+            this.ctx.fillRect(rect.x - 20, rect.y - 20, rect.w + 40, rect.h + 40);
+
+            // Pipes
+            this.ctx.strokeStyle = '#ff6644';
+            this.ctx.lineWidth = 4;
+            this.ctx.beginPath();
+            this.ctx.moveTo(rect.x, rect.cy);
+            this.ctx.lineTo(rect.x - 30, rect.cy);
+            this.ctx.stroke();
+
+            this.ctx.strokeStyle = '#4488ff';
+            this.ctx.beginPath();
+            this.ctx.moveTo(rect.x + rect.w, rect.cy);
+            this.ctx.lineTo(rect.x + rect.w + 30, rect.cy);
+            this.ctx.stroke();
+
+            this.drawLabel(rect.cx, rect.y - 10, 'HEAT EXCHANGER', '#ff8844');
+            this.drawLabel(rect.cx, rect.y + rect.h + 15, `${Math.round(efficiency * 100)}% EFF`, '#888');
+        }
+
+        // Draw Data Center
+        drawDataCenter(thermal) {
+            const rect = this.getFacilityRect('dataCenter');
+            const load = thermal.serverLoad;
+            const sourceTemp = thermal.loopA.supplyTemp;
+
+            // Building
+            const gradient = this.ctx.createLinearGradient(rect.x, rect.y, rect.x, rect.y + rect.h);
             gradient.addColorStop(0, '#2a2a3e');
             gradient.addColorStop(1, '#1a1a2e');
 
-            ctx.fillStyle = gradient;
-            ctx.beginPath();
-            ctx.roundRect(x, y, w, h, 5);
-            ctx.fill();
+            this.ctx.fillStyle = gradient;
+            this.ctx.beginPath();
+            this.ctx.roundRect(rect.x, rect.y, rect.w, rect.h, 8);
+            this.ctx.fill();
 
             // Server rack lights
-            const time = Date.now() / 100;
-            const rackCount = Math.floor(w / 15);
+            const rackCount = Math.floor(rect.w / 12);
             for (let i = 0; i < rackCount; i++) {
                 for (let j = 0; j < 3; j++) {
-                    const lightOn = Math.sin(time + i * 0.5 + j) > 0.3;
-                    ctx.fillStyle = lightOn ?
-                        (state.serverLoad > 80 ? '#ff4444' : '#44ff44') :
-                        'rgba(100, 100, 100, 0.3)';
-                    ctx.fillRect(x + 5 + i * 15, y + 5 + j * 8, 8, 4);
+                    const lightOn = Math.sin(this.animTime * 10 + i * 0.7 + j * 1.3) > (1 - load/50);
+                    const color = load > 85 ? '#ff4444' : (load > 60 ? '#ffaa00' : '#44ff44');
+                    this.ctx.fillStyle = lightOn ? color : 'rgba(100, 100, 100, 0.3)';
+                    this.ctx.fillRect(rect.x + 8 + i * 12, rect.y + 8 + j * 10, 6, 4);
                 }
             }
 
-            // Heat glow
-            if (state.serverLoad > 50) {
-                const glowIntensity = (state.serverLoad - 50) / 50 * 0.3;
-                ctx.fillStyle = `rgba(255, 68, 68, ${glowIntensity})`;
-                ctx.beginPath();
-                ctx.roundRect(x, y, w, h, 5);
-                ctx.fill();
+            // Heat glow based on load
+            if (load > 50) {
+                const intensity = (load - 50) / 50;
+                const heatGlow = this.ctx.createRadialGradient(rect.cx, rect.y, 0, rect.cx, rect.y, rect.h);
+                heatGlow.addColorStop(0, `rgba(255, 68, 68, ${intensity * 0.4})`);
+                heatGlow.addColorStop(1, 'transparent');
+                this.ctx.fillStyle = heatGlow;
+                this.ctx.fillRect(rect.x - 20, rect.y - 40, rect.w + 40, rect.h + 40);
             }
 
             // Border
-            ctx.strokeStyle = state.serverLoad > 80 ? '#ff4444' : '#00aaff';
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.roundRect(x, y, w, h, 5);
-            ctx.stroke();
-        }
+            const borderColor = load > 85 ? '#ff4444' : (load > 60 ? '#ffaa00' : '#00aaff');
+            this.ctx.strokeStyle = borderColor;
+            this.ctx.lineWidth = 2;
+            this.ctx.beginPath();
+            this.ctx.roundRect(rect.x, rect.y, rect.w, rect.h, 8);
+            this.ctx.stroke();
 
-        function drawStandardFacility(x, y, w, h, facility, key) {
-            // Background
-            ctx.fillStyle = facility.color;
-            ctx.beginPath();
-            ctx.roundRect(x, y, w, h, 8);
-            ctx.fill();
+            // Emergency cooling indicator
+            if (thermal.emergencyCooling) {
+                this.ctx.fillStyle = 'rgba(255, 0, 0, 0.3)';
+                this.ctx.fillRect(rect.x, rect.y, rect.w, rect.h);
 
-            // Temperature-based color overlay for temp zones
-            if (facility.temp) {
-                const temp = state.temps[facility.temp];
-                const hue = Math.max(0, Math.min(240, (120 - temp) * 4));
-                ctx.fillStyle = `hsla(${hue}, 70%, 50%, 0.3)`;
-                ctx.beginPath();
-                ctx.roundRect(x, y, w, h, 8);
-                ctx.fill();
-            }
-
-            // Border
-            ctx.strokeStyle = facility.glowColor;
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.roundRect(x, y, w, h, 8);
-            ctx.stroke();
-
-            // Activity animation for water features
-            if (['spa', 'lazyRiver', 'surfWaves', 'rapids'].includes(key)) {
-                drawWaterActivity(x, y, w, h, key);
-            }
-        }
-
-        function drawWaterActivity(x, y, w, h, type) {
-            const time = Date.now() / 500;
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
-
-            if (type === 'surfWaves') {
-                // Wave animation
+                // Cooling fans animation
+                this.ctx.strokeStyle = '#00ffff';
+                this.ctx.lineWidth = 2;
                 for (let i = 0; i < 3; i++) {
-                    const waveY = y + h * 0.3 + i * 15 + Math.sin(time + i) * 5;
-                    ctx.beginPath();
-                    ctx.moveTo(x + 5, waveY);
-                    ctx.quadraticCurveTo(x + w * 0.5, waveY - 10, x + w - 5, waveY);
-                    ctx.stroke();
+                    const fx = rect.x + rect.w * (0.25 + i * 0.25);
+                    const fy = rect.y - 15;
+                    this.ctx.beginPath();
+                    this.ctx.arc(fx, fy, 10, 0, Math.PI * 2);
+                    this.ctx.stroke();
+
+                    // Spinning blades
+                    for (let b = 0; b < 4; b++) {
+                        const angle = this.animTime * 10 + b * (Math.PI / 2);
+                        this.ctx.beginPath();
+                        this.ctx.moveTo(fx, fy);
+                        this.ctx.lineTo(fx + Math.cos(angle) * 8, fy + Math.sin(angle) * 8);
+                        this.ctx.stroke();
+                    }
                 }
-            } else if (type === 'rapids') {
-                // Splash effects
-                for (let i = 0; i < 5; i++) {
-                    const splashX = x + Math.random() * w;
-                    const splashY = y + Math.random() * h;
-                    ctx.beginPath();
-                    ctx.arc(splashX, splashY, 3 + Math.sin(time + i) * 2, 0, Math.PI * 2);
-                    ctx.fill();
-                }
-            }
-        }
-
-        function drawParticles(w, h) {
-            // Water particles
-            state.waterParticles.forEach(p => {
-                // Color based on temperature
-                const hue = Math.max(0, Math.min(240, (120 - p.temp) * 4));
-                ctx.fillStyle = `hsla(${hue}, 70%, 60%, ${p.alpha})`;
-                ctx.beginPath();
-                ctx.arc(p.x * w, p.y * h, p.size, 0, Math.PI * 2);
-                ctx.fill();
-            });
-
-            // Steam particles
-            if (state.fogEffects) {
-                state.steamParticles.forEach(p => {
-                    ctx.fillStyle = `rgba(255, 255, 255, ${p.alpha})`;
-                    ctx.beginPath();
-                    ctx.arc(p.x * w, p.y * h, p.size, 0, Math.PI * 2);
-                    ctx.fill();
-                });
             }
 
-            // Fountain particles
-            if (state.fountains) {
-                state.fountainParticles.forEach(p => {
-                    const gradient = ctx.createRadialGradient(
-                        p.x * w, p.y * h, 0,
-                        p.x * w, p.y * h, p.size
-                    );
-                    gradient.addColorStop(0, `rgba(200, 230, 255, ${p.alpha})`);
-                    gradient.addColorStop(1, `rgba(100, 180, 255, 0)`);
-                    ctx.fillStyle = gradient;
-                    ctx.beginPath();
-                    ctx.arc(p.x * w, p.y * h, p.size, 0, Math.PI * 2);
-                    ctx.fill();
-                });
-            }
+            this.drawLabel(rect.cx, rect.y - 15, 'LIVARA VAULT - DATA CENTER', '#00aaff');
+            this.drawLabel(rect.cx, rect.y + rect.h + 18, `${load}% LOAD • ${Math.round(sourceTemp)}°F OUTPUT`, '#888');
         }
 
-        function drawFlowArrows(w, h) {
-            if (!state.loopA && !state.loopB) return;
+        // Draw connecting pipes with flow animation
+        drawPipes(thermal) {
+            const flowSpeed = thermal.loopA.flowRate / 1000;
 
-            const time = Date.now() / 1000;
-            ctx.fillStyle = 'rgba(0, 212, 255, 0.6)';
+            // Loop A: Data Center -> Heat Exchanger (Hot)
+            this.drawPipe(
+                this.facilities.dataCenter,
+                this.facilities.heatExchanger,
+                thermal.loopA.supplyTemp,
+                flowSpeed,
+                'up'
+            );
 
-            // Animated arrows along flow paths
-            const paths = [
-                { x1: 0.5, y1: 0.85, x2: 0.5, y2: 0.7 },
-                { x1: 0.5, y1: 0.7, x2: 0.5, y2: 0.55 },
-                { x1: 0.42, y1: 0.72, x2: 0.17, y2: 0.51 },
-                { x1: 0.17, y1: 0.57, x2: 0.35, y2: 0.62 }
-            ];
-
-            paths.forEach((path, i) => {
-                const progress = (time * 0.5 + i * 0.2) % 1;
-                const x = (path.x1 + (path.x2 - path.x1) * progress) * w;
-                const y = (path.y1 + (path.y2 - path.y1) * progress) * h;
-
-                ctx.beginPath();
-                ctx.arc(x, y, 4, 0, Math.PI * 2);
-                ctx.fill();
-            });
-        }
-
-        function drawMiniMap() {
-            const mw = miniCanvas.width;
-            const mh = miniCanvas.height;
-
-            // Background
-            miniCtx.fillStyle = '#0a1628';
-            miniCtx.fillRect(0, 0, mw, mh);
-
-            // Draw simplified facilities
-            for (const [key, facility] of Object.entries(facilities)) {
-                miniCtx.fillStyle = facility.color;
-                miniCtx.fillRect(
-                    facility.x * mw,
-                    facility.y * mh,
-                    facility.w * mw,
-                    facility.h * mh
+            // Loop B: Heat Exchanger -> Zones
+            const zones = ['spa', 'surf', 'rapids', 'beach'];
+            zones.forEach((zone, i) => {
+                this.drawPipe(
+                    this.facilities.heatExchanger,
+                    this.facilities[zone],
+                    thermal.loopB.supplyTemp - i * 3,
+                    flowSpeed * 0.8,
+                    'up'
                 );
-            }
+            });
 
-            // Border
-            miniCtx.strokeStyle = 'rgba(0, 212, 255, 0.5)';
-            miniCtx.lineWidth = 1;
-            miniCtx.strokeRect(0, 0, mw, mh);
+            // Zones -> Reservoir (cooling)
+            zones.forEach((zone, i) => {
+                this.drawPipe(
+                    this.facilities[zone],
+                    this.facilities.reservoir,
+                    thermal.zones[zone].currentTemp,
+                    flowSpeed * 0.6,
+                    'up'
+                );
+            });
+
+            // Reservoir -> Heat Exchanger Return (Cold)
+            this.drawPipe(
+                this.facilities.reservoir,
+                this.facilities.heatExchanger,
+                thermal.loopB.returnTemp,
+                flowSpeed * 0.5,
+                'down',
+                true
+            );
         }
 
-        // ============================================
-        // Game Loop
-        // ============================================
+        drawPipe(from, to, temp, flowSpeed, direction, isReturn = false) {
+            const fromX = from.x * this.width;
+            const fromY = (from.y + from.h/2) * this.height;
+            const toX = to.x * this.width;
+            const toY = (to.y + to.h/2) * this.height;
 
-        let lastTime = 0;
+            // Pipe line
+            this.ctx.strokeStyle = this.getTempColor(temp, 0.4);
+            this.ctx.lineWidth = isReturn ? 3 : 4;
+            this.ctx.setLineDash(isReturn ? [5, 5] : []);
 
-        function gameLoop(timestamp) {
-            const deltaTime = timestamp - lastTime;
-            lastTime = timestamp;
+            this.ctx.beginPath();
+            this.ctx.moveTo(fromX, fromY);
+            this.ctx.lineTo(toX, toY);
+            this.ctx.stroke();
+            this.ctx.setLineDash([]);
 
-            // Update
-            updateSimulation(deltaTime);
-            updateParticles();
+            // Flow particles
+            this.ctx.fillStyle = this.getTempColor(temp, 0.8);
+            const dist = Math.sqrt((toX - fromX) ** 2 + (toY - fromY) ** 2);
+            const particleCount = Math.floor(dist / 50);
 
-            // Smooth camera zoom
-            state.camera.zoom += (state.camera.targetZoom - state.camera.zoom) * 0.1;
+            for (let i = 0; i < particleCount; i++) {
+                let progress = ((this.animTime * flowSpeed * 0.5 + i / particleCount) % 1);
+                if (direction === 'down' || isReturn) progress = 1 - progress;
+
+                const x = fromX + (toX - fromX) * progress;
+                const y = fromY + (toY - fromY) * progress;
+
+                this.ctx.beginPath();
+                this.ctx.arc(x, y, 4, 0, Math.PI * 2);
+                this.ctx.fill();
+            }
+        }
+
+        // Draw steam/fog particles
+        drawSteamFog(thermal) {
+            const ambientTemp = thermal.ambientTemp;
+
+            for (const [key, zone] of Object.entries(thermal.zones)) {
+                if (zone.currentTemp > ambientTemp + 20) {
+                    const rect = this.getFacilityRect(key);
+                    if (!rect) continue;
+
+                    const intensity = (zone.currentTemp - ambientTemp - 20) / 30;
+                    const particleCount = Math.floor(intensity * 30);
+
+                    for (let i = 0; i < particleCount; i++) {
+                        const progress = ((this.animTime * 0.5 + i * 0.1) % 1);
+                        const x = rect.cx + (Math.sin(i * 2.5 + this.animTime) * rect.w * 0.4);
+                        const y = rect.y - progress * 60;
+                        const size = 5 + progress * 15;
+                        const alpha = (1 - progress) * 0.4 * intensity;
+
+                        this.ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+                        this.ctx.beginPath();
+                        this.ctx.arc(x, y, size, 0, Math.PI * 2);
+                        this.ctx.fill();
+                    }
+                }
+            }
+        }
+
+        // Helper to draw labels
+        drawLabel(x, y, text, color) {
+            this.ctx.font = 'bold 10px system-ui';
+            this.ctx.textAlign = 'center';
+            this.ctx.fillStyle = color;
+            this.ctx.fillText(text.toUpperCase(), x, y);
+        }
+
+        // Main render function
+        render(thermal, gameTime) {
+            this.animTime = gameTime / 1000;
+            this.timeOfDay = (gameTime / 1000 / 60) % 24; // 1 real second = 1 game minute
+
+            // Clear
+            this.ctx.clearRect(0, 0, this.width, this.height);
+
+            // Draw layers
+            this.drawSky();
+            this.drawTerrain();
+            this.drawDam(thermal);
+            this.drawReservoir(thermal);
+            this.drawFountains(thermal);
+            this.drawPipes(thermal);
+
+            // Recreation zones
+            this.drawZone('spa', thermal, '♨️', 'THERMAL SPA');
+            this.drawZone('beach', thermal, '🏖️', 'HEATED BEACH');
+            this.drawZone('surf', thermal, '🌊', 'SURF WAVES');
+            this.drawZone('rapids', thermal, '🚣', 'RAPIDS');
+            this.drawLazyRiver(thermal);
+
+            this.drawGreenWall(thermal);
+            this.drawHeatExchanger(thermal);
+            this.drawDataCenter(thermal);
+
+            // Atmospheric effects
+            this.drawSteamFog(thermal);
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // PHASE 3 & 4: GAME CONTROLLER - Ties Everything Together
+    // ═══════════════════════════════════════════════════════════════════════════════
+
+    class Game {
+        constructor() {
+            this.canvas = document.getElementById('mainCanvas');
+            this.thermal = new ThermalSystem();
+            this.renderer = new Renderer(this.canvas);
+
+            this.gameTime = 12 * 60 * 60 * 1000; // Start at noon (in ms)
+            this.timeSpeed = 1;
+            this.lastTimestamp = 0;
+            this.running = false;
+
+            this.alerts = [];
+
+            this.setupControls();
+            this.setupResize();
+        }
+
+        setupControls() {
+            // Server Load
+            const serverLoadSlider = document.getElementById('slider-server-load');
+            serverLoadSlider.addEventListener('input', (e) => {
+                this.thermal.serverLoad = parseInt(e.target.value);
+                document.getElementById('val-server-load').textContent = e.target.value + '%';
+            });
+
+            // Cooling Efficiency
+            const coolingSlider = document.getElementById('slider-cooling-eff');
+            coolingSlider.addEventListener('input', (e) => {
+                this.thermal.coolingEfficiency = parseInt(e.target.value);
+                this.thermal.heatExchanger.efficiency = parseInt(e.target.value) / 100;
+                document.getElementById('val-cooling-eff').textContent = e.target.value + '%';
+            });
+
+            // Ambient Temperature
+            const ambientSlider = document.getElementById('slider-ambient-temp');
+            ambientSlider.addEventListener('input', (e) => {
+                this.thermal.ambientTemp = parseInt(e.target.value);
+                document.getElementById('val-ambient-temp').textContent = e.target.value + '°F';
+            });
+
+            // Time Speed
+            const timeSlider = document.getElementById('slider-time-speed');
+            timeSlider.addEventListener('input', (e) => {
+                const speeds = [0, 1, 2, 5, 10];
+                this.timeSpeed = speeds[parseInt(e.target.value)];
+                document.getElementById('val-time-speed').textContent = this.timeSpeed + 'x';
+            });
+        }
+
+        setupResize() {
+            window.addEventListener('resize', () => {
+                this.renderer.resize();
+            });
+        }
+
+        showAlert(message, type = 'warning') {
+            const alertsContainer = document.getElementById('alerts');
+            const alert = document.createElement('div');
+            alert.className = `alert ${type}`;
+            alert.innerHTML = `<span>${type === 'critical' ? '⚠️' : type === 'success' ? '✅' : '⚡'}</span> ${message}`;
+            alertsContainer.appendChild(alert);
+
+            setTimeout(() => {
+                alert.style.opacity = '0';
+                setTimeout(() => alert.remove(), 300);
+            }, 4000);
+        }
+
+        updateUI() {
+            // Metrics
+            document.getElementById('metric-mw').textContent = Math.round(this.thermal.calculateMWOutput());
+            document.getElementById('metric-source-temp').textContent = Math.round(this.thermal.loopA.supplyTemp);
+            document.getElementById('metric-pue').textContent = this.thermal.pue.toFixed(2);
+            document.getElementById('metric-revenue').textContent = '$' + Math.round(this.thermal.hourlyRevenue).toLocaleString();
+
+            // Zone temperatures
+            for (const [key, zone] of Object.entries(this.thermal.zones)) {
+                const el = document.getElementById(`temp-${key}`);
+                if (el) {
+                    el.textContent = Math.round(zone.currentTemp) + '°F';
+                    el.style.color = this.renderer.getTempColor(zone.currentTemp);
+                }
+            }
+
+            // System status
+            document.getElementById('val-loop-a-flow').textContent = Math.round(this.thermal.loopA.flowRate).toLocaleString() + ' GPM';
+            document.getElementById('val-loop-b-flow').textContent = Math.round(this.thermal.loopB.flowRate).toLocaleString() + ' GPM';
+            document.getElementById('val-exchanger-eff').textContent = Math.round(this.thermal.heatExchanger.efficiency * 100) + '%';
+
+            // Emergency cooling status
+            const emergencyIndicator = document.getElementById('status-emergency');
+            const emergencyValue = document.getElementById('val-emergency');
+            if (this.thermal.emergencyCooling) {
+                emergencyIndicator.className = 'status-indicator critical';
+                emergencyValue.textContent = 'ACTIVE';
+                emergencyValue.style.color = '#ff4444';
+            } else {
+                emergencyIndicator.className = 'status-indicator';
+                emergencyValue.textContent = 'Standby';
+                emergencyValue.style.color = '';
+            }
+
+            // Time display
+            const totalMinutes = Math.floor(this.gameTime / 60000);
+            const hours = Math.floor((totalMinutes / 60) % 24);
+            const minutes = totalMinutes % 60;
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            const displayHour = hours % 12 || 12;
+
+            document.getElementById('time-value').textContent =
+                `${displayHour}:${minutes.toString().padStart(2, '0')} ${ampm}`;
+
+            const day = Math.floor(totalMinutes / (24 * 60)) + 1;
+            const seasons = ['Winter', 'Spring', 'Summer', 'Fall'];
+            const season = seasons[Math.floor((day / 30) % 4)];
+            document.getElementById('time-date').textContent = `Day ${day} • ${season}`;
+
+            // Time icon
+            const timeIcon = hours >= 6 && hours < 20 ? '☀️' : '🌙';
+            document.getElementById('time-icon').textContent = timeIcon;
+        }
+
+        gameLoop(timestamp) {
+            if (!this.running) return;
+
+            const deltaTime = this.lastTimestamp ? (timestamp - this.lastTimestamp) : 16;
+            this.lastTimestamp = timestamp;
+
+            // Update game time
+            this.gameTime += deltaTime * this.timeSpeed * 60; // 60x for faster day/night
+
+            // Get current hour for simulation
+            const gameHour = Math.floor((this.gameTime / 3600000) % 24);
+
+            // Update thermal simulation
+            const emergencyStatus = this.thermal.tick(deltaTime * this.timeSpeed, gameHour);
+
+            // Handle emergency alerts
+            if (emergencyStatus === 'ENGAGED') {
+                this.showAlert('EMERGENCY COOLING ENGAGED - Source temperature exceeded 118°F', 'critical');
+            } else if (emergencyStatus === 'DISENGAGED') {
+                this.showAlert('Emergency cooling disengaged - Temperature normalized', 'success');
+            }
+
+            // Update renderer time
+            this.renderer.timeOfDay = gameHour;
 
             // Render
-            render();
+            this.renderer.render(this.thermal, this.gameTime);
 
-            requestAnimationFrame(gameLoop);
+            // Update UI
+            this.updateUI();
+
+            requestAnimationFrame((t) => this.gameLoop(t));
         }
 
-        // Start the game
-        init();
+        async start() {
+            // Simulate loading
+            const loadingProgress = document.getElementById('loading-progress');
+            const loadingStatus = document.getElementById('loading-status');
+            const loadingScreen = document.getElementById('loading');
+
+            const steps = [
+                { progress: 20, status: 'Initializing Thermal Engine...' },
+                { progress: 40, status: 'Loading Recreation Zones...' },
+                { progress: 60, status: 'Calibrating Heat Exchangers...' },
+                { progress: 80, status: 'Starting Flow Systems...' },
+                { progress: 100, status: 'Ready!' }
+            ];
+
+            for (const step of steps) {
+                loadingProgress.style.width = step.progress + '%';
+                loadingStatus.textContent = step.status;
+                await new Promise(r => setTimeout(r, 400));
+            }
+
+            await new Promise(r => setTimeout(r, 500));
+            loadingScreen.classList.add('hidden');
+
+            this.running = true;
+            this.showAlert('Welcome to LIVARA! Adjust server load to see heat flow dynamics.', 'success');
+            requestAnimationFrame((t) => this.gameLoop(t));
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // INITIALIZE
+    // ═══════════════════════════════════════════════════════════════════════════════
+
+    const game = new Game();
+    game.start();
     </script>
 </body>
 </html>

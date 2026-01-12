@@ -331,18 +331,6 @@
             overflow: hidden;
         }
 
-        #controls-hint {
-            position: absolute;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            padding: 8px 16px;
-            font-size: 10px;
-            color: rgba(255,255,255,0.4);
-            letter-spacing: 1px;
-            pointer-events: none;
-        }
-
         #minimapCanvas {
             width: 100%;
             height: 100%;
@@ -508,8 +496,6 @@
             <div id="minimap" class="glass">
                 <canvas id="minimapCanvas"></canvas>
             </div>
-
-            <div id="controls-hint">DRAG TO PAN • SCROLL TO ZOOM • WASD/ARROWS TO NAVIGATE • R TO RESET</div>
 
             <div id="alerts"></div>
         </div>
@@ -1972,14 +1958,14 @@ class Renderer {
     }
 
     drawPipes(thermal) {
-        const flowSpeed = thermal.loopA.flowRate / 2000;
+        const flowSpeed = thermal.loopA.flowRate / 2500;
 
-        // Define pipe routes
+        // Define pipe routes with labels
         const pipes = [
-            { from: [0.5, 0.82], to: [0.5, 0.75], temp: thermal.loopA.supplyTemp, hot: true },
-            { from: [0.5, 0.72], to: [0.5, 0.55], temp: thermal.loopB.supplyTemp, hot: true },
-            { from: [0.42, 0.73], to: [0.17, 0.5], temp: thermal.loopB.supplyTemp - 5, hot: true },
-            { from: [0.58, 0.73], to: [0.83, 0.5], temp: thermal.loopB.supplyTemp - 10, hot: false },
+            { from: [0.5, 0.82], to: [0.5, 0.74], temp: thermal.loopA.supplyTemp, label: 'LOOP A' },
+            { from: [0.5, 0.72], to: [0.5, 0.55], temp: thermal.loopB.supplyTemp, label: 'LOOP B' },
+            { from: [0.42, 0.72], to: [0.17, 0.5], temp: thermal.loopB.supplyTemp - 5, label: null },
+            { from: [0.58, 0.72], to: [0.83, 0.5], temp: thermal.loopB.supplyTemp - 10, label: null },
         ];
 
         for (const pipe of pipes) {
@@ -1987,27 +1973,73 @@ class Renderer {
             const y1 = pipe.from[1] * this.height;
             const x2 = pipe.to[0] * this.width;
             const y2 = pipe.to[1] * this.height;
+            const dx = x2 - x1;
+            const dy = y2 - y1;
+            const dist = Math.hypot(dx, dy);
+            const angle = Math.atan2(dy, dx);
 
-            // Pipe line
-            this.ctx.strokeStyle = this.tempToColor(pipe.temp, 0.5);
+            // Pipe outer glow
+            this.ctx.strokeStyle = this.tempToColor(pipe.temp, 0.15);
+            this.ctx.lineWidth = 12;
+            this.ctx.lineCap = 'round';
+            this.ctx.beginPath();
+            this.ctx.moveTo(x1, y1);
+            this.ctx.lineTo(x2, y2);
+            this.ctx.stroke();
+
+            // Pipe core
+            this.ctx.strokeStyle = this.tempToColor(pipe.temp, 0.6);
             this.ctx.lineWidth = 5;
             this.ctx.beginPath();
             this.ctx.moveTo(x1, y1);
             this.ctx.lineTo(x2, y2);
             this.ctx.stroke();
 
-            // Flow particles
-            const dist = Math.hypot(x2 - x1, y2 - y1);
-            const count = Math.floor(dist / 40);
-            this.ctx.fillStyle = this.tempToColor(pipe.temp, 0.9);
-
+            // Flow particles as directional arrows/teardrops
+            const count = Math.floor(dist / 50);
             for (let i = 0; i < count; i++) {
                 const t = (this.time * flowSpeed + i / count) % 1;
-                const px = x1 + (x2 - x1) * t;
-                const py = y1 + (y2 - y1) * t;
+                const px = x1 + dx * t;
+                const py = y1 + dy * t;
+
+                this.ctx.save();
+                this.ctx.translate(px, py);
+                this.ctx.rotate(angle);
+
+                // Teardrop shape pointing in flow direction
+                this.ctx.fillStyle = this.tempToColor(pipe.temp, 0.95);
                 this.ctx.beginPath();
-                this.ctx.arc(px, py, 4, 0, Math.PI * 2);
+                this.ctx.moveTo(6, 0);
+                this.ctx.quadraticCurveTo(0, -4, -5, 0);
+                this.ctx.quadraticCurveTo(0, 4, 6, 0);
                 this.ctx.fill();
+
+                this.ctx.restore();
+            }
+
+            // Subtle direction arrow at midpoint
+            const mx = x1 + dx * 0.5;
+            const my = y1 + dy * 0.5;
+            this.ctx.save();
+            this.ctx.translate(mx, my);
+            this.ctx.rotate(angle);
+            this.ctx.fillStyle = 'rgba(255,255,255,0.4)';
+            this.ctx.beginPath();
+            this.ctx.moveTo(8, 0);
+            this.ctx.lineTo(-4, -5);
+            this.ctx.lineTo(-4, 5);
+            this.ctx.closePath();
+            this.ctx.fill();
+            this.ctx.restore();
+
+            // Loop label
+            if (pipe.label) {
+                const lx = x1 + dx * 0.5 + 15;
+                const ly = y1 + dy * 0.5;
+                this.ctx.fillStyle = 'rgba(255,255,255,0.5)';
+                this.ctx.font = '9px system-ui';
+                this.ctx.textAlign = 'left';
+                this.ctx.fillText(pipe.label, lx, ly + 3);
             }
         }
     }
@@ -2097,8 +2129,9 @@ class Renderer {
         // Minimap (fixed position, no camera transform)
         this.drawMinimap(thermal);
 
-        // Zoom indicator
+        // UI overlays
         this.drawZoomIndicator();
+        this.drawTemperatureLegend();
     }
 
     drawZoomIndicator() {
@@ -2111,6 +2144,50 @@ class Renderer {
             this.ctx.textAlign = 'center';
             this.ctx.fillText(`${Math.round(zoom * 100)}%`, this.width - 280, 220);
         }
+    }
+
+    drawTemperatureLegend() {
+        const x = 20;
+        const y = this.height - 140;
+        const w = 12;
+        const h = 100;
+
+        // Subtle background
+        this.ctx.fillStyle = 'rgba(0,0,0,0.3)';
+        this.ctx.beginPath();
+        this.ctx.roundRect(x - 8, y - 25, w + 45, h + 40, 8);
+        this.ctx.fill();
+
+        // Temperature gradient bar
+        const grad = this.ctx.createLinearGradient(x, y, x, y + h);
+        grad.addColorStop(0, '#ff3c28');    // 105°F - Hot
+        grad.addColorStop(0.25, '#ff9944'); // 95°F
+        grad.addColorStop(0.5, '#88cc44');  // 85°F
+        grad.addColorStop(0.75, '#44aadd'); // 75°F
+        grad.addColorStop(1, '#2266aa');    // 65°F - Cool
+
+        this.ctx.fillStyle = grad;
+        this.ctx.beginPath();
+        this.ctx.roundRect(x, y, w, h, 4);
+        this.ctx.fill();
+
+        // Subtle border
+        this.ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+        this.ctx.lineWidth = 1;
+        this.ctx.stroke();
+
+        // Temperature labels - minimal, elegant
+        this.ctx.fillStyle = 'rgba(255,255,255,0.7)';
+        this.ctx.font = '10px system-ui';
+        this.ctx.textAlign = 'left';
+        this.ctx.fillText('105°', x + w + 6, y + 4);
+        this.ctx.fillText('85°', x + w + 6, y + h/2 + 3);
+        this.ctx.fillText('65°', x + w + 6, y + h + 3);
+
+        // Label
+        this.ctx.fillStyle = 'rgba(255,255,255,0.5)';
+        this.ctx.font = '9px system-ui';
+        this.ctx.fillText('TEMP °F', x - 2, y - 10);
     }
 }
 
@@ -2147,10 +2224,14 @@ class Game {
                 }
                 else if (prop === 'ambient') this.thermal.ambientTemp = v;
                 else if (prop === 'timeSpeed') {
-                    const speeds = [0, 1, 2, 5, 10];
+                    const speeds = [0, 1, 2, 4, 8];
                     this.timeSpeed = speeds[Math.floor(v)];
                 }
-                val.textContent = (prop === 'timeSpeed' ? this.timeSpeed + 'x' : Math.round(v) + suffix);
+                if (prop === 'timeSpeed') {
+                    val.textContent = this.timeSpeed === 0 ? 'Paused' : this.timeSpeed + 'x';
+                } else {
+                    val.textContent = Math.round(v) + suffix;
+                }
             });
         };
 
@@ -2212,16 +2293,17 @@ class Game {
         emergencyVal.textContent = t.emergencyCooling ? 'ACTIVE' : 'Standby';
         emergencyVal.style.color = t.emergencyCooling ? '#ff4444' : '';
 
-        // Time
-        const mins = Math.floor(this.gameTime / 60000);
-        const h = Math.floor((mins / 60) % 24);
-        const m = mins % 60;
-        document.getElementById('timeValue').textContent = `${h % 12 || 12}:${m.toString().padStart(2, '0')} ${h >= 12 ? 'PM' : 'AM'}`;
+        // Time - display hours cleanly
+        const hours = Math.floor(this.gameTime / 3600000);
+        const h = hours % 24;
+        const displayHour = h % 12 || 12;
+        const period = h >= 12 ? 'PM' : 'AM';
+        document.getElementById('timeValue').textContent = `${displayHour}:00 ${period}`;
         document.getElementById('timeIcon').textContent = (h >= 6 && h < 20) ? '☀️' : '🌙';
 
-        const day = Math.floor(mins / 1440) + 1;
+        const day = Math.floor(hours / 24) + 1;
         const seasons = ['Winter', 'Spring', 'Summer', 'Fall'];
-        document.getElementById('dateValue').textContent = `Day ${day} • ${seasons[Math.floor(day / 30) % 4]}`;
+        document.getElementById('dateValue').textContent = `Day ${day} • ${seasons[Math.floor(day / 90) % 4]}`;
 
         document.getElementById('ambientTemp').textContent = Math.round(t.ambientTemp) + '°F';
     }
@@ -2233,7 +2315,8 @@ class Game {
             const dt = this.lastTime ? ts - this.lastTime : 16;
             this.lastTime = ts;
 
-            this.gameTime += dt * this.timeSpeed * 60;
+            // Time advances hour-by-hour (1 hour every ~3 seconds at 1x speed)
+            this.gameTime += dt * this.timeSpeed * 1200;
             const hour = Math.floor((this.gameTime / 3600000) % 24);
 
             const emergency = this.thermal.tick(dt * this.timeSpeed, hour);
@@ -2272,7 +2355,7 @@ class Game {
         loading.classList.add('hidden');
 
         this.running = true;
-        this.showAlert('Welcome to LIVARA! Adjust server load to control heat flow.', 'success');
+        this.showAlert('Data center heat flows to recreation zones. Adjust server load to see the thermal system respond.', 'success');
         requestAnimationFrame(t => this.loop(t));
     }
 }

@@ -621,6 +621,21 @@
 // LIVARA PHOTOREALISTIC SIMULATION ENGINE
 // ═══════════════════════════════════════════════════════════════════════════════
 
+// Polyfill for roundRect (older browsers)
+if (!CanvasRenderingContext2D.prototype.roundRect) {
+    CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
+        if (w < 2 * r) r = w / 2;
+        if (h < 2 * r) r = h / 2;
+        this.moveTo(x + r, y);
+        this.arcTo(x + w, y, x + w, y + h, r);
+        this.arcTo(x + w, y + h, x, y + h, r);
+        this.arcTo(x, y + h, x, y, r);
+        this.arcTo(x, y, x + w, y, r);
+        this.closePath();
+        return this;
+    };
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // THERMAL PHYSICS ENGINE
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1604,9 +1619,12 @@ class Renderer {
 
         // Pulsing glow for status
         const pulseAlpha = 0.3 + Math.sin(this.time * 4) * 0.2;
+        const hexColor = statusColor.replace('#', '');
+        const sr = parseInt(hexColor.substr(0, 2), 16);
+        const sg = parseInt(hexColor.substr(2, 2), 16);
+        const sb = parseInt(hexColor.substr(4, 2), 16);
         const glowGrad = this.ctx.createLinearGradient(dx, dy + dh, dx, dy + dh + 20);
-        glowGrad.addColorStop(0, statusColor.replace('#', 'rgba(').replace(/(..)(..)(..)/, (m,r,g,b) =>
-            `${parseInt(r,16)},${parseInt(g,16)},${parseInt(b,16)},${pulseAlpha})`));
+        glowGrad.addColorStop(0, `rgba(${sr},${sg},${sb},${pulseAlpha})`);
         glowGrad.addColorStop(1, 'transparent');
         this.ctx.fillStyle = glowGrad;
         this.ctx.fillRect(dx, dy + dh, dw, 20);
@@ -2211,18 +2229,22 @@ class Game {
     loop(ts) {
         if (!this.running) return;
 
-        const dt = this.lastTime ? ts - this.lastTime : 16;
-        this.lastTime = ts;
+        try {
+            const dt = this.lastTime ? ts - this.lastTime : 16;
+            this.lastTime = ts;
 
-        this.gameTime += dt * this.timeSpeed * 60;
-        const hour = Math.floor((this.gameTime / 3600000) % 24);
+            this.gameTime += dt * this.timeSpeed * 60;
+            const hour = Math.floor((this.gameTime / 3600000) % 24);
 
-        const emergency = this.thermal.tick(dt * this.timeSpeed, hour);
-        if (emergency === 'ENGAGED') this.showAlert('EMERGENCY COOLING ENGAGED - Temperature critical!', 'critical');
-        else if (emergency === 'DISENGAGED') this.showAlert('Emergency cooling disengaged - Normalized', 'success');
+            const emergency = this.thermal.tick(dt * this.timeSpeed, hour);
+            if (emergency === 'ENGAGED') this.showAlert('EMERGENCY COOLING ENGAGED - Temperature critical!', 'critical');
+            else if (emergency === 'DISENGAGED') this.showAlert('Emergency cooling disengaged - Normalized', 'success');
 
-        this.renderer.render(this.thermal, this.gameTime);
-        this.updateUI();
+            this.renderer.render(this.thermal, this.gameTime);
+            this.updateUI();
+        } catch (err) {
+            console.error('Game loop error:', err);
+        }
 
         requestAnimationFrame(t => this.loop(t));
     }

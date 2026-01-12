@@ -331,6 +331,18 @@
             overflow: hidden;
         }
 
+        #controls-hint {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 8px 16px;
+            font-size: 10px;
+            color: rgba(255,255,255,0.4);
+            letter-spacing: 1px;
+            pointer-events: none;
+        }
+
         #minimapCanvas {
             width: 100%;
             height: 100%;
@@ -488,13 +500,16 @@
             <div id="view-controls">
                 <button class="view-btn" id="btnZoomIn" title="Zoom In">+</button>
                 <button class="view-btn" id="btnZoomOut" title="Zoom Out">−</button>
-                <button class="view-btn" id="btnRotateL" title="Rotate Left">↺</button>
-                <button class="view-btn" id="btnRotateR" title="Rotate Right">↻</button>
+                <button class="view-btn" id="btnRotateL" title="Pan Left">←</button>
+                <button class="view-btn" id="btnRotateR" title="Pan Right">→</button>
+                <button class="view-btn" id="btnReset" title="Reset View (R)">⌂</button>
             </div>
 
             <div id="minimap" class="glass">
                 <canvas id="minimapCanvas"></canvas>
             </div>
+
+            <div id="controls-hint">DRAG TO PAN • SCROLL TO ZOOM • WASD/ARROWS TO NAVIGATE • R TO RESET</div>
 
             <div id="alerts"></div>
         </div>
@@ -712,11 +727,21 @@ class Renderer {
         this.time = 0;
         this.timeOfDay = 12;
 
-        // Camera
-        this.camera = { x: 0, y: 0, zoom: 1, rotation: 0 };
+        // Camera with smooth interpolation
+        this.camera = {
+            x: 0, y: 0, zoom: 1, rotation: 0,
+            targetX: 0, targetY: 0, targetZoom: 1,
+            velX: 0, velY: 0,
+            isDragging: false,
+            dragStartX: 0, dragStartY: 0,
+            lastMouseX: 0, lastMouseY: 0
+        };
 
         // Isometric settings
         this.iso = { tileW: 64, tileH: 32 };
+
+        // Setup camera controls
+        this.setupCameraControls();
 
         // Pre-generate trees, rocks, etc.
         this.trees = [];
@@ -736,6 +761,143 @@ class Renderer {
         this.canvas.height = this.height;
         this.mini.width = 160;
         this.mini.height = 100;
+    }
+
+    setupCameraControls() {
+        const canvas = this.canvas;
+
+        // Mouse drag for panning
+        canvas.addEventListener('mousedown', (e) => {
+            if (e.button === 0) { // Left click
+                this.camera.isDragging = true;
+                this.camera.dragStartX = e.clientX - this.camera.x;
+                this.camera.dragStartY = e.clientY - this.camera.y;
+                canvas.style.cursor = 'grabbing';
+            }
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            if (this.camera.isDragging) {
+                this.camera.targetX = e.clientX - this.camera.dragStartX;
+                this.camera.targetY = e.clientY - this.camera.dragStartY;
+
+                // Clamp to reasonable bounds
+                const maxPan = 300 * this.camera.zoom;
+                this.camera.targetX = Math.max(-maxPan, Math.min(maxPan, this.camera.targetX));
+                this.camera.targetY = Math.max(-maxPan, Math.min(maxPan, this.camera.targetY));
+            }
+            this.camera.lastMouseX = e.clientX;
+            this.camera.lastMouseY = e.clientY;
+        });
+
+        canvas.addEventListener('mouseup', () => {
+            this.camera.isDragging = false;
+            canvas.style.cursor = 'grab';
+        });
+
+        canvas.addEventListener('mouseleave', () => {
+            this.camera.isDragging = false;
+            canvas.style.cursor = 'default';
+        });
+
+        canvas.addEventListener('mouseenter', () => {
+            canvas.style.cursor = 'grab';
+        });
+
+        // Scroll wheel for zoom
+        canvas.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            const zoomSpeed = 0.1;
+            const delta = e.deltaY > 0 ? -zoomSpeed : zoomSpeed;
+
+            // Zoom towards mouse position
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+
+            const oldZoom = this.camera.targetZoom;
+            this.camera.targetZoom = Math.max(0.5, Math.min(2.5, this.camera.targetZoom + delta));
+
+            // Adjust pan to zoom towards mouse
+            const zoomRatio = this.camera.targetZoom / oldZoom;
+            this.camera.targetX = mouseX - (mouseX - this.camera.targetX) * zoomRatio;
+            this.camera.targetY = mouseY - (mouseY - this.camera.targetY) * zoomRatio;
+        }, { passive: false });
+
+        // Touch support for mobile
+        let touchStartDist = 0;
+        let touchStartZoom = 1;
+
+        canvas.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 1) {
+                this.camera.isDragging = true;
+                this.camera.dragStartX = e.touches[0].clientX - this.camera.x;
+                this.camera.dragStartY = e.touches[0].clientY - this.camera.y;
+            } else if (e.touches.length === 2) {
+                touchStartDist = Math.hypot(
+                    e.touches[0].clientX - e.touches[1].clientX,
+                    e.touches[0].clientY - e.touches[1].clientY
+                );
+                touchStartZoom = this.camera.targetZoom;
+            }
+        });
+
+        canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            if (e.touches.length === 1 && this.camera.isDragging) {
+                this.camera.targetX = e.touches[0].clientX - this.camera.dragStartX;
+                this.camera.targetY = e.touches[0].clientY - this.camera.dragStartY;
+            } else if (e.touches.length === 2) {
+                const dist = Math.hypot(
+                    e.touches[0].clientX - e.touches[1].clientX,
+                    e.touches[0].clientY - e.touches[1].clientY
+                );
+                this.camera.targetZoom = Math.max(0.5, Math.min(2.5, touchStartZoom * (dist / touchStartDist)));
+            }
+        }, { passive: false });
+
+        canvas.addEventListener('touchend', () => {
+            this.camera.isDragging = false;
+        });
+
+        // Keyboard controls
+        window.addEventListener('keydown', (e) => {
+            const panSpeed = 30;
+            switch(e.key) {
+                case 'ArrowLeft': case 'a': this.camera.targetX += panSpeed; break;
+                case 'ArrowRight': case 'd': this.camera.targetX -= panSpeed; break;
+                case 'ArrowUp': case 'w': this.camera.targetY += panSpeed; break;
+                case 'ArrowDown': case 's': this.camera.targetY -= panSpeed; break;
+                case '+': case '=': this.camera.targetZoom = Math.min(2.5, this.camera.targetZoom + 0.1); break;
+                case '-': case '_': this.camera.targetZoom = Math.max(0.5, this.camera.targetZoom - 0.1); break;
+                case 'r': case 'Home': this.resetCamera(); break;
+            }
+        });
+    }
+
+    resetCamera() {
+        this.camera.targetX = 0;
+        this.camera.targetY = 0;
+        this.camera.targetZoom = 1;
+    }
+
+    updateCamera() {
+        // Smooth interpolation (easing)
+        const smoothing = 0.12;
+        this.camera.x += (this.camera.targetX - this.camera.x) * smoothing;
+        this.camera.y += (this.camera.targetY - this.camera.y) * smoothing;
+        this.camera.zoom += (this.camera.targetZoom - this.camera.zoom) * smoothing;
+    }
+
+    applyCamera() {
+        this.ctx.save();
+        this.ctx.translate(this.width / 2, this.height / 2);
+        this.ctx.scale(this.camera.zoom, this.camera.zoom);
+        this.ctx.translate(-this.width / 2 + this.camera.x, -this.height / 2 + this.camera.y);
+    }
+
+    resetTransform() {
+        this.ctx.restore();
     }
 
     generateScenery() {
@@ -777,6 +939,51 @@ class Renderer {
                 type: Math.floor(Math.random() * 2)
             });
         }
+    }
+
+    // Shadow system
+    getSunPosition() {
+        const h = this.timeOfDay;
+        if (h < 6 || h >= 20) return null; // Night - no sun shadows
+        const progress = (h - 6) / 14;
+        return {
+            x: 0.1 + progress * 0.8,
+            y: 0.3 - Math.sin(progress * Math.PI) * 0.25,
+            intensity: Math.sin(progress * Math.PI) * 0.6
+        };
+    }
+
+    drawShadow(x, y, width, height, offsetX = 0, offsetY = 0) {
+        const sun = this.getSunPosition();
+        if (!sun) return;
+
+        const shadowX = x + (0.5 - sun.x) * width * 1.5 + offsetX;
+        const shadowY = y + height * 0.8 + offsetY;
+        const shadowW = width * (1.2 - sun.y * 0.5);
+        const shadowH = height * 0.3;
+
+        this.ctx.fillStyle = `rgba(0,0,0,${sun.intensity * 0.35})`;
+        this.ctx.beginPath();
+        this.ctx.ellipse(shadowX, shadowY, shadowW * 0.6, shadowH, 0, 0, Math.PI * 2);
+        this.ctx.fill();
+    }
+
+    drawBuildingShadow(x, y, width, height) {
+        const sun = this.getSunPosition();
+        if (!sun) return;
+
+        const shadowDir = sun.x < 0.5 ? 1 : -1;
+        const shadowLen = Math.abs(0.5 - sun.x) * width * 2;
+        const shadowAlpha = sun.intensity * 0.4;
+
+        this.ctx.fillStyle = `rgba(0,0,0,${shadowAlpha})`;
+        this.ctx.beginPath();
+        this.ctx.moveTo(x, y + height);
+        this.ctx.lineTo(x + width, y + height);
+        this.ctx.lineTo(x + width + shadowDir * shadowLen, y + height + shadowLen * 0.3);
+        this.ctx.lineTo(x + shadowDir * shadowLen, y + height + shadowLen * 0.3);
+        this.ctx.closePath();
+        this.ctx.fill();
     }
 
     // Color utilities
@@ -854,26 +1061,52 @@ class Renderer {
     }
 
     drawTerrain() {
-        // Ground
         const groundY = this.height * 0.45;
+        const sun = this.getSunPosition();
+        const isDay = sun !== null;
+        const lightMult = isDay ? 0.7 + sun.intensity * 0.5 : 0.4;
+
+        // Ground with time-based lighting
         const groundGrad = this.ctx.createLinearGradient(0, groundY, 0, this.height);
-        groundGrad.addColorStop(0, '#3d6b3d');
-        groundGrad.addColorStop(0.3, '#2d5a2d');
-        groundGrad.addColorStop(1, '#1a3a1a');
+        const r = Math.floor(61 * lightMult);
+        const g = Math.floor(107 * lightMult);
+        const b = Math.floor(61 * lightMult);
+        groundGrad.addColorStop(0, `rgb(${r},${g},${b})`);
+        groundGrad.addColorStop(0.3, `rgb(${Math.floor(45*lightMult)},${Math.floor(90*lightMult)},${Math.floor(45*lightMult)})`);
+        groundGrad.addColorStop(1, `rgb(${Math.floor(26*lightMult)},${Math.floor(58*lightMult)},${Math.floor(26*lightMult)})`);
         this.ctx.fillStyle = groundGrad;
         this.ctx.fillRect(0, groundY, this.width, this.height - groundY);
 
-        // Grass texture
-        this.ctx.strokeStyle = 'rgba(50,100,50,0.3)';
+        // Animated grass with wind
+        const windStrength = 0.5 + Math.sin(this.time * 0.3) * 0.3;
         this.ctx.lineWidth = 1;
-        for (let i = 0; i < 500; i++) {
-            const gx = Math.random() * this.width;
-            const gy = groundY + Math.random() * (this.height - groundY);
-            const gh = 3 + Math.random() * 5;
+
+        for (let i = 0; i < 600; i++) {
+            const gx = (i * 3.7 + Math.sin(i * 0.1) * 50) % this.width;
+            const gy = groundY + 10 + (i * 1.3) % (this.height - groundY - 20);
+            const gh = 4 + (i % 5) * 1.5;
+            const windOffset = Math.sin(this.time * 2 + gx * 0.01) * windStrength * 3;
+
+            // Grass color varies
+            const grassHue = 90 + (i % 30);
+            const grassLight = Math.floor(35 * lightMult) + (i % 15);
+            this.ctx.strokeStyle = `hsla(${grassHue}, 50%, ${grassLight}%, 0.5)`;
+
             this.ctx.beginPath();
             this.ctx.moveTo(gx, gy);
-            this.ctx.lineTo(gx + Math.sin(this.time + i) * 2, gy - gh);
+            this.ctx.quadraticCurveTo(gx + windOffset * 0.5, gy - gh * 0.5, gx + windOffset, gy - gh);
             this.ctx.stroke();
+        }
+
+        // Ground texture variation
+        for (let i = 0; i < 100; i++) {
+            const tx = (i * 17.3) % this.width;
+            const ty = groundY + 30 + (i * 11.7) % (this.height - groundY - 50);
+            const size = 2 + (i % 4);
+            this.ctx.fillStyle = `rgba(${30 + i % 20},${50 + i % 30},${30 + i % 20},0.3)`;
+            this.ctx.beginPath();
+            this.ctx.arc(tx, ty, size, 0, Math.PI * 2);
+            this.ctx.fill();
         }
     }
 
@@ -910,28 +1143,58 @@ class Renderer {
         const ry = this.height * 0.18;
         const temp = thermal.zones.reservoir.temp;
 
-        // Water base with temperature gradient
-        const waterGrad = this.ctx.createRadialGradient(cx, cy, 0, cx, cy, rx);
-        waterGrad.addColorStop(0, this.tempToColor(temp + 5, 0.9));
-        waterGrad.addColorStop(0.5, this.tempToColor(temp, 0.85));
-        waterGrad.addColorStop(1, this.tempToColor(temp - 5, 0.75));
+        // Sandy beach shore
+        this.ctx.fillStyle = '#c4a574';
+        this.ctx.beginPath();
+        this.ctx.ellipse(cx, cy, rx + 15, ry + 8, 0, 0, Math.PI * 2);
+        this.ctx.fill();
+
+        // Shore detail - wet sand
+        const wetSandGrad = this.ctx.createRadialGradient(cx, cy, rx - 5, cx, cy, rx + 12);
+        wetSandGrad.addColorStop(0, 'rgba(139,119,90,0.8)');
+        wetSandGrad.addColorStop(1, 'rgba(180,160,120,0.3)');
+        this.ctx.fillStyle = wetSandGrad;
+        this.ctx.beginPath();
+        this.ctx.ellipse(cx, cy, rx + 12, ry + 6, 0, 0, Math.PI * 2);
+        this.ctx.fill();
+
+        // Water base with realistic depth gradient
+        const waterGrad = this.ctx.createRadialGradient(cx, cy - ry * 0.2, 0, cx, cy, rx);
+        const baseColor = this.tempToColor(temp, 1);
+        waterGrad.addColorStop(0, this.tempToColor(temp + 8, 0.95));
+        waterGrad.addColorStop(0.3, this.tempToColor(temp + 3, 0.9));
+        waterGrad.addColorStop(0.6, this.tempToColor(temp, 0.85));
+        waterGrad.addColorStop(1, this.tempToColor(temp - 8, 0.7));
 
         this.ctx.fillStyle = waterGrad;
         this.ctx.beginPath();
         this.ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
         this.ctx.fill();
 
-        // Realistic water waves
-        for (let ring = 0; ring < 8; ring++) {
-            const ringR = rx * (0.3 + ring * 0.1);
-            const ringRy = ry * (0.3 + ring * 0.1);
-            this.ctx.strokeStyle = `rgba(255,255,255,${0.15 - ring * 0.015})`;
-            this.ctx.lineWidth = 1.5;
+        // Realistic wave physics - multiple wave layers
+        const windSpeed = 0.5 + Math.sin(this.time * 0.1) * 0.3;
+
+        // Primary waves (wind-driven)
+        for (let ring = 0; ring < 12; ring++) {
+            const ringR = rx * (0.15 + ring * 0.07);
+            const ringRy = ry * (0.15 + ring * 0.07);
+            const waveAmplitude = 2 + ring * 0.5;
+            const waveFreq = 6 - ring * 0.3;
+            const alpha = 0.18 - ring * 0.012;
+
+            this.ctx.strokeStyle = `rgba(255,255,255,${alpha})`;
+            this.ctx.lineWidth = 1.5 - ring * 0.08;
             this.ctx.beginPath();
-            for (let a = 0; a < Math.PI * 2; a += 0.1) {
-                const wave = Math.sin(a * 8 + this.time * 2 + ring) * 3;
-                const px = cx + Math.cos(a) * (ringR + wave);
-                const py = cy + Math.sin(a) * (ringRy + wave * 0.5);
+
+            for (let a = 0; a < Math.PI * 2; a += 0.05) {
+                // Combine multiple wave frequencies for realism
+                const wave1 = Math.sin(a * waveFreq + this.time * 2.5 * windSpeed + ring * 0.5) * waveAmplitude;
+                const wave2 = Math.sin(a * (waveFreq * 2.3) + this.time * 3.2 + ring) * (waveAmplitude * 0.4);
+                const wave3 = Math.sin(a * (waveFreq * 0.7) - this.time * 1.8) * (waveAmplitude * 0.6);
+                const totalWave = wave1 + wave2 + wave3;
+
+                const px = cx + Math.cos(a) * (ringR + totalWave);
+                const py = cy + Math.sin(a) * (ringRy + totalWave * 0.5);
                 if (a === 0) this.ctx.moveTo(px, py);
                 else this.ctx.lineTo(px, py);
             }
@@ -939,18 +1202,71 @@ class Renderer {
             this.ctx.stroke();
         }
 
-        // Reflections
-        this.ctx.fillStyle = 'rgba(255,255,255,0.05)';
-        this.ctx.beginPath();
-        this.ctx.ellipse(cx - rx * 0.3, cy - ry * 0.3, rx * 0.4, ry * 0.2, -0.3, 0, Math.PI * 2);
-        this.ctx.fill();
+        // Caustic light patterns (underwater light refraction)
+        if (this.timeOfDay >= 7 && this.timeOfDay < 18) {
+            this.ctx.save();
+            this.ctx.beginPath();
+            this.ctx.ellipse(cx, cy, rx - 5, ry - 3, 0, 0, Math.PI * 2);
+            this.ctx.clip();
 
-        // Shore
-        this.ctx.strokeStyle = 'rgba(139,119,101,0.6)';
-        this.ctx.lineWidth = 8;
+            for (let i = 0; i < 25; i++) {
+                const cx2 = cx + Math.sin(i * 2.7 + this.time * 0.8) * rx * 0.6;
+                const cy2 = cy + Math.cos(i * 3.1 + this.time * 0.6) * ry * 0.5;
+                const size = 15 + Math.sin(i + this.time * 2) * 8;
+                const alpha = 0.03 + Math.sin(i * 1.3 + this.time * 1.5) * 0.02;
+
+                const causticGrad = this.ctx.createRadialGradient(cx2, cy2, 0, cx2, cy2, size);
+                causticGrad.addColorStop(0, `rgba(255,255,200,${alpha})`);
+                causticGrad.addColorStop(1, 'transparent');
+                this.ctx.fillStyle = causticGrad;
+                this.ctx.fillRect(cx2 - size, cy2 - size, size * 2, size * 2);
+            }
+            this.ctx.restore();
+        }
+
+        // Sun/moon reflection on water
+        const sunProgress = (this.timeOfDay - 6) / 12;
+        if (this.timeOfDay >= 7 && this.timeOfDay < 18) {
+            const reflectX = cx + (sunProgress - 0.5) * rx * 0.8;
+            const reflectY = cy - ry * 0.2;
+
+            // Shimmering reflection
+            for (let i = 0; i < 8; i++) {
+                const shimmerX = reflectX + Math.sin(this.time * 3 + i) * 15;
+                const shimmerY = reflectY + i * 8 + Math.sin(this.time * 4 + i * 2) * 3;
+                const shimmerW = 30 - i * 2;
+                const shimmerH = 4 + Math.sin(this.time * 5 + i) * 2;
+
+                this.ctx.fillStyle = `rgba(255,255,200,${0.3 - i * 0.03})`;
+                this.ctx.beginPath();
+                this.ctx.ellipse(shimmerX, shimmerY, shimmerW, shimmerH, 0, 0, Math.PI * 2);
+                this.ctx.fill();
+            }
+        } else if (this.timeOfDay >= 20 || this.timeOfDay < 5) {
+            // Moon reflection
+            const moonReflectGrad = this.ctx.createRadialGradient(cx + rx * 0.3, cy, 0, cx + rx * 0.3, cy, 40);
+            moonReflectGrad.addColorStop(0, 'rgba(200,210,255,0.15)');
+            moonReflectGrad.addColorStop(1, 'transparent');
+            this.ctx.fillStyle = moonReflectGrad;
+            this.ctx.beginPath();
+            this.ctx.ellipse(cx + rx * 0.3, cy, 50, 25, 0, 0, Math.PI * 2);
+            this.ctx.fill();
+        }
+
+        // Foam at edges
+        this.ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+        this.ctx.lineWidth = 3;
+        this.ctx.setLineDash([8, 12]);
         this.ctx.beginPath();
-        this.ctx.ellipse(cx, cy, rx + 4, ry + 2, 0, 0, Math.PI * 2);
+        for (let a = 0; a < Math.PI * 2; a += 0.08) {
+            const foam = Math.sin(a * 15 + this.time * 3) * 2;
+            const px = cx + Math.cos(a) * (rx - 2 + foam);
+            const py = cy + Math.sin(a) * (ry - 1 + foam * 0.5);
+            if (a === 0) this.ctx.moveTo(px, py);
+            else this.ctx.lineTo(px, py);
+        }
         this.ctx.stroke();
+        this.ctx.setLineDash([]);
     }
 
     drawFountains(thermal) {
@@ -1110,91 +1426,170 @@ class Renderer {
         const dw = this.width * 0.4;
         const dh = this.height * 0.12;
         const load = thermal.serverLoad;
+        const sun = this.getSunPosition();
+        const isDay = sun !== null;
 
-        // Main building - 3D isometric
-        // Front face
+        // Building shadow
+        this.drawBuildingShadow(dx, dy, dw, dh);
+
+        // Main building - enhanced 3D isometric with lighting
+        const lightMult = isDay ? 0.8 + sun.intensity * 0.4 : 0.5;
+
+        // Foundation/base
+        this.ctx.fillStyle = '#1a1a28';
+        this.ctx.fillRect(dx - 5, dy + dh, dw + 25, 8);
+
+        // Front face with window reflections
         const buildGrad = this.ctx.createLinearGradient(dx, dy, dx, dy + dh);
-        buildGrad.addColorStop(0, '#2a2a3e');
-        buildGrad.addColorStop(1, '#1a1a2e');
+        buildGrad.addColorStop(0, `rgb(${Math.floor(42*lightMult)},${Math.floor(42*lightMult)},${Math.floor(62*lightMult)})`);
+        buildGrad.addColorStop(0.5, `rgb(${Math.floor(32*lightMult)},${Math.floor(32*lightMult)},${Math.floor(52*lightMult)})`);
+        buildGrad.addColorStop(1, `rgb(${Math.floor(26*lightMult)},${Math.floor(26*lightMult)},${Math.floor(46*lightMult)})`);
         this.ctx.fillStyle = buildGrad;
         this.ctx.fillRect(dx, dy, dw, dh);
 
-        // Roof
-        this.ctx.fillStyle = '#3a3a4e';
+        // Glass panels/windows
+        const panelCount = 12;
+        for (let i = 0; i < panelCount; i++) {
+            const px = dx + 10 + i * (dw - 20) / panelCount;
+            const pw = (dw - 20) / panelCount - 4;
+
+            // Window frame
+            this.ctx.fillStyle = '#0a0a18';
+            this.ctx.fillRect(px, dy + 8, pw, dh - 16);
+
+            // Glass reflection
+            const reflectGrad = this.ctx.createLinearGradient(px, dy + 8, px + pw, dy + dh - 8);
+            reflectGrad.addColorStop(0, 'rgba(100,150,200,0.15)');
+            reflectGrad.addColorStop(0.3, 'rgba(50,80,120,0.05)');
+            reflectGrad.addColorStop(1, 'rgba(100,150,200,0.1)');
+            this.ctx.fillStyle = reflectGrad;
+            this.ctx.fillRect(px, dy + 8, pw, dh - 16);
+        }
+
+        // Roof with solar panels
+        this.ctx.fillStyle = `rgb(${Math.floor(58*lightMult)},${Math.floor(58*lightMult)},${Math.floor(78*lightMult)})`;
         this.ctx.beginPath();
         this.ctx.moveTo(dx, dy);
-        this.ctx.lineTo(dx + 15, dy - 10);
-        this.ctx.lineTo(dx + dw + 15, dy - 10);
+        this.ctx.lineTo(dx + 20, dy - 15);
+        this.ctx.lineTo(dx + dw + 20, dy - 15);
         this.ctx.lineTo(dx + dw, dy);
         this.ctx.closePath();
         this.ctx.fill();
 
-        // Right side
-        this.ctx.fillStyle = '#1a1a28';
+        // Solar panels on roof
+        for (let i = 0; i < 8; i++) {
+            const spx = dx + 30 + i * (dw - 40) / 8;
+            const spy = dy - 12;
+            this.ctx.fillStyle = '#1a2a4a';
+            this.ctx.fillRect(spx, spy, (dw - 40) / 8 - 5, 8);
+
+            // Panel grid lines
+            this.ctx.strokeStyle = '#2a3a5a';
+            this.ctx.lineWidth = 0.5;
+            this.ctx.beginPath();
+            this.ctx.moveTo(spx + 5, spy);
+            this.ctx.lineTo(spx + 5, spy + 8);
+            this.ctx.stroke();
+        }
+
+        // Right side (3D depth)
+        const rightGrad = this.ctx.createLinearGradient(dx + dw, dy, dx + dw + 20, dy);
+        rightGrad.addColorStop(0, `rgb(${Math.floor(26*lightMult*0.7)},${Math.floor(26*lightMult*0.7)},${Math.floor(40*lightMult*0.7)})`);
+        rightGrad.addColorStop(1, `rgb(${Math.floor(20*lightMult*0.7)},${Math.floor(20*lightMult*0.7)},${Math.floor(35*lightMult*0.7)})`);
+        this.ctx.fillStyle = rightGrad;
         this.ctx.beginPath();
         this.ctx.moveTo(dx + dw, dy);
-        this.ctx.lineTo(dx + dw + 15, dy - 10);
-        this.ctx.lineTo(dx + dw + 15, dy + dh - 10);
+        this.ctx.lineTo(dx + dw + 20, dy - 15);
+        this.ctx.lineTo(dx + dw + 20, dy + dh - 15);
         this.ctx.lineTo(dx + dw, dy + dh);
         this.ctx.closePath();
         this.ctx.fill();
 
-        // Server racks with lights
-        const racks = 20;
+        // Server racks visible through windows (with activity lights)
+        const racks = 24;
         for (let i = 0; i < racks; i++) {
-            const rx = dx + 15 + i * (dw - 30) / racks;
-            const rw = (dw - 30) / racks - 3;
+            const rx = dx + 12 + i * (dw - 24) / racks;
+            const rw = (dw - 24) / racks - 2;
 
-            // Rack
-            this.ctx.fillStyle = '#0a0a15';
-            this.ctx.fillRect(rx, dy + 10, rw, dh - 20);
+            // Rack silhouette
+            this.ctx.fillStyle = 'rgba(0,0,0,0.3)';
+            this.ctx.fillRect(rx, dy + 12, rw, dh - 24);
 
-            // Blinking lights
-            for (let j = 0; j < 6; j++) {
-                const lightOn = Math.sin(this.time * 8 + i * 0.5 + j * 1.2) > (1 - load / 50);
+            // Activity lights
+            for (let j = 0; j < 8; j++) {
+                const lightOn = Math.sin(this.time * 10 + i * 0.7 + j * 1.5) > (1 - load / 50);
+                const blinkSpeed = load > 80 ? 15 : load > 50 ? 10 : 6;
+                const fastBlink = Math.sin(this.time * blinkSpeed + i + j) > 0;
+
                 let color;
-                if (load > 85) color = lightOn ? '#ff4444' : '#330000';
-                else if (load > 60) color = lightOn ? '#ffaa00' : '#332200';
-                else color = lightOn ? '#44ff44' : '#003300';
+                if (load > 85) color = (lightOn && fastBlink) ? '#ff3333' : '#220000';
+                else if (load > 60) color = lightOn ? '#ffaa00' : '#221100';
+                else color = lightOn ? '#00ff66' : '#002200';
 
                 this.ctx.fillStyle = color;
-                this.ctx.fillRect(rx + 2, dy + 15 + j * 10, rw - 4, 4);
+                this.ctx.fillRect(rx + 1, dy + 14 + j * 7, rw - 2, 3);
+
+                // Light glow
+                if (lightOn && (load > 60 || j === 0)) {
+                    this.ctx.fillStyle = color.replace('#', 'rgba(') + ',0.3)';
+                    this.ctx.beginPath();
+                    this.ctx.arc(rx + rw/2, dy + 15 + j * 7, 4, 0, Math.PI * 2);
+                    this.ctx.fill();
+                }
             }
         }
 
-        // Heat glow
+        // Heat shimmer effect above building
         if (load > 50) {
             const intensity = (load - 50) / 100;
-            const heatGrad = this.ctx.createRadialGradient(dx + dw/2, dy, 0, dx + dw/2, dy, dh * 1.5);
-            heatGrad.addColorStop(0, `rgba(255,100,50,${intensity * 0.5})`);
-            heatGrad.addColorStop(1, 'transparent');
-            this.ctx.fillStyle = heatGrad;
-            this.ctx.fillRect(dx - 30, dy - 50, dw + 60, dh + 50);
+            for (let i = 0; i < 15; i++) {
+                const hx = dx + Math.random() * dw;
+                const hy = dy - 20 - Math.random() * 30;
+                const hw = 2 + Math.random() * 4;
+
+                const shimmer = Math.sin(this.time * 8 + i * 2) * 0.5 + 0.5;
+                this.ctx.fillStyle = `rgba(255,150,100,${intensity * shimmer * 0.2})`;
+                this.ctx.beginPath();
+                this.ctx.ellipse(hx, hy, hw, hw * 2, 0, 0, Math.PI * 2);
+                this.ctx.fill();
+            }
         }
 
-        // Cooling towers
-        for (let i = 0; i < 3; i++) {
-            const tx = dx + dw + 30 + i * 35;
-            const ty = dy + 20;
+        // Enhanced cooling towers
+        for (let i = 0; i < 4; i++) {
+            const tx = dx + dw + 35 + i * 30;
+            const ty = dy + 25;
+            const towerH = 55;
 
-            // Tower body
-            this.ctx.fillStyle = '#4a4a5a';
+            // Tower shadow
+            this.drawShadow(tx, ty + towerH, 20, towerH, 0, 5);
+
+            // Cooling tower - hyperboloid shape
+            this.ctx.fillStyle = '#5a5a6a';
             this.ctx.beginPath();
-            this.ctx.moveTo(tx - 12, ty + 60);
-            this.ctx.lineTo(tx - 8, ty);
-            this.ctx.lineTo(tx + 8, ty);
-            this.ctx.lineTo(tx + 12, ty + 60);
+            this.ctx.moveTo(tx - 14, ty + towerH);
+            this.ctx.quadraticCurveTo(tx - 8, ty + towerH * 0.5, tx - 10, ty);
+            this.ctx.lineTo(tx + 10, ty);
+            this.ctx.quadraticCurveTo(tx + 8, ty + towerH * 0.5, tx + 14, ty + towerH);
             this.ctx.closePath();
             this.ctx.fill();
 
-            // Steam
-            if (load > 30) {
-                for (let s = 0; s < 5; s++) {
-                    const st = (this.time + s * 0.2 + i * 0.3) % 1;
-                    const sx = tx + Math.sin(st * 10 + i) * 8;
-                    const sy = ty - st * 40;
-                    const ss = 5 + st * 15;
-                    this.ctx.fillStyle = `rgba(200,200,200,${(1 - st) * 0.4})`;
+            // Tower rim
+            this.ctx.fillStyle = '#6a6a7a';
+            this.ctx.beginPath();
+            this.ctx.ellipse(tx, ty, 10, 4, 0, 0, Math.PI * 2);
+            this.ctx.fill();
+
+            // Steam with varying intensity based on load
+            const steamIntensity = load / 100;
+            if (load > 20) {
+                for (let s = 0; s < 8; s++) {
+                    const st = (this.time * 0.8 + s * 0.12 + i * 0.25) % 1;
+                    const sx = tx + Math.sin(st * 12 + i * 2) * (6 + st * 10);
+                    const sy = ty - 5 - st * 50;
+                    const ss = 4 + st * 20;
+
+                    this.ctx.fillStyle = `rgba(220,220,230,${(1 - st) * 0.5 * steamIntensity})`;
                     this.ctx.beginPath();
                     this.ctx.arc(sx, sy, ss, 0, Math.PI * 2);
                     this.ctx.fill();
@@ -1202,46 +1597,82 @@ class Renderer {
             }
         }
 
-        // Border glow based on load
-        const borderColor = load > 85 ? '#ff4444' : load > 60 ? '#ffaa00' : '#00aaff';
-        this.ctx.strokeStyle = borderColor;
-        this.ctx.lineWidth = 3;
-        this.ctx.strokeRect(dx, dy, dw, dh);
+        // Status indicator light strip
+        const statusColor = load > 85 ? '#ff4444' : load > 60 ? '#ffaa00' : '#00ff88';
+        this.ctx.fillStyle = statusColor;
+        this.ctx.fillRect(dx, dy + dh - 3, dw, 3);
 
-        // Emergency cooling fans
+        // Pulsing glow for status
+        const pulseAlpha = 0.3 + Math.sin(this.time * 4) * 0.2;
+        const glowGrad = this.ctx.createLinearGradient(dx, dy + dh, dx, dy + dh + 20);
+        glowGrad.addColorStop(0, statusColor.replace('#', 'rgba(').replace(/(..)(..)(..)/, (m,r,g,b) =>
+            `${parseInt(r,16)},${parseInt(g,16)},${parseInt(b,16)},${pulseAlpha})`));
+        glowGrad.addColorStop(1, 'transparent');
+        this.ctx.fillStyle = glowGrad;
+        this.ctx.fillRect(dx, dy + dh, dw, 20);
+
+        // Emergency systems
         if (thermal.emergencyCooling) {
-            this.ctx.fillStyle = 'rgba(255,0,0,0.2)';
+            // Red alert overlay
+            this.ctx.fillStyle = `rgba(255,0,0,${0.1 + Math.sin(this.time * 8) * 0.1})`;
             this.ctx.fillRect(dx, dy, dw, dh);
 
-            for (let i = 0; i < 5; i++) {
-                const fx = dx + 30 + i * (dw - 60) / 4;
-                const fy = dy - 20;
+            // Spinning emergency fans
+            for (let i = 0; i < 6; i++) {
+                const fx = dx + 25 + i * (dw - 50) / 5;
+                const fy = dy - 25;
 
+                // Fan housing
+                this.ctx.fillStyle = '#333';
+                this.ctx.beginPath();
+                this.ctx.arc(fx, fy, 14, 0, Math.PI * 2);
+                this.ctx.fill();
+
+                // Spinning blades
                 this.ctx.strokeStyle = '#00ffff';
                 this.ctx.lineWidth = 2;
-                this.ctx.beginPath();
-                this.ctx.arc(fx, fy, 12, 0, Math.PI * 2);
-                this.ctx.stroke();
-
                 for (let b = 0; b < 4; b++) {
-                    const ba = this.time * 15 + b * Math.PI / 2;
+                    const ba = this.time * 20 + b * Math.PI / 2;
                     this.ctx.beginPath();
                     this.ctx.moveTo(fx, fy);
-                    this.ctx.lineTo(fx + Math.cos(ba) * 10, fy + Math.sin(ba) * 10);
+                    this.ctx.lineTo(fx + Math.cos(ba) * 11, fy + Math.sin(ba) * 11);
                     this.ctx.stroke();
                 }
+
+                // Center hub
+                this.ctx.fillStyle = '#00ffff';
+                this.ctx.beginPath();
+                this.ctx.arc(fx, fy, 3, 0, Math.PI * 2);
+                this.ctx.fill();
+            }
+
+            // Warning text
+            if (Math.sin(this.time * 6) > 0) {
+                this.ctx.fillStyle = '#ff0000';
+                this.ctx.font = 'bold 12px system-ui';
+                this.ctx.textAlign = 'center';
+                this.ctx.fillText('⚠ EMERGENCY COOLING ACTIVE ⚠', dx + dw / 2, dy - 40);
             }
         }
 
-        // Label
-        this.ctx.fillStyle = '#00aaff';
-        this.ctx.font = 'bold 13px system-ui';
+        // Building label
+        this.ctx.fillStyle = '#00ccff';
+        this.ctx.font = 'bold 14px system-ui';
         this.ctx.textAlign = 'center';
-        this.ctx.fillText('LIVARA VAULT - DATA CENTER', dx + dw / 2, dy - 20);
+        this.ctx.shadowColor = '#00ccff';
+        this.ctx.shadowBlur = 10;
+        this.ctx.fillText('LIVARA VAULT', dx + dw / 2, dy - 55);
+        this.ctx.shadowBlur = 0;
 
-        this.ctx.fillStyle = '#666';
+        this.ctx.fillStyle = '#888';
         this.ctx.font = '11px system-ui';
-        this.ctx.fillText(`${load}% LOAD • ${Math.round(thermal.loopA.supplyTemp)}°F OUTPUT`, dx + dw / 2, dy + dh + 18);
+        this.ctx.fillText('HYPERSCALE DATA CENTER', dx + dw / 2, dy - 40);
+
+        // Stats display
+        const mw = Math.round(thermal.powerCapacity * load / 100);
+        this.ctx.fillStyle = '#aaa';
+        this.ctx.font = 'bold 11px monospace';
+        this.ctx.fillText(`${load}% LOAD  •  ${mw} MW  •  ${Math.round(thermal.loopA.supplyTemp)}°F`, dx + dw / 2, dy + dh + 20);
     }
 
     drawZone(x, y, w, h, name, icon, thermal, zoneKey) {
@@ -1605,10 +2036,18 @@ class Renderer {
         this.time = gameTime / 1000;
         this.timeOfDay = (gameTime / 60000) % 24;
 
+        // Update camera smoothly
+        this.updateCamera();
+
         this.ctx.clearRect(0, 0, this.width, this.height);
 
-        // Background layers
+        // Draw sky without camera transform (fixed background)
         this.drawSky();
+
+        // Apply camera transform for world elements
+        this.applyCamera();
+
+        // Background layers
         this.drawMountains();
         this.drawTerrain();
 
@@ -1634,8 +2073,26 @@ class Renderer {
         // Atmospheric effects
         this.drawSteamFog(thermal);
 
-        // Minimap
+        // Reset transform for UI elements
+        this.resetTransform();
+
+        // Minimap (fixed position, no camera transform)
         this.drawMinimap(thermal);
+
+        // Zoom indicator
+        this.drawZoomIndicator();
+    }
+
+    drawZoomIndicator() {
+        const zoom = this.camera.zoom;
+        if (Math.abs(zoom - 1) > 0.05) {
+            this.ctx.fillStyle = 'rgba(0,0,0,0.5)';
+            this.ctx.fillRect(this.width - 320, 200, 80, 30);
+            this.ctx.fillStyle = '#00d4ff';
+            this.ctx.font = 'bold 14px system-ui';
+            this.ctx.textAlign = 'center';
+            this.ctx.fillText(`${Math.round(zoom * 100)}%`, this.width - 280, 220);
+        }
     }
 }
 
@@ -1684,9 +2141,24 @@ class Game {
         bind('sliderAmbient', 'ambient', '°F');
         bind('sliderTimeSpeed', 'timeSpeed', 'x');
 
-        // View controls
-        document.getElementById('btnZoomIn').onclick = () => this.renderer.camera.zoom = Math.min(2, this.renderer.camera.zoom + 0.1);
-        document.getElementById('btnZoomOut').onclick = () => this.renderer.camera.zoom = Math.max(0.5, this.renderer.camera.zoom - 0.1);
+        // View controls with smooth transitions
+        document.getElementById('btnZoomIn').onclick = () => {
+            this.renderer.camera.targetZoom = Math.min(2.5, this.renderer.camera.targetZoom + 0.2);
+        };
+        document.getElementById('btnZoomOut').onclick = () => {
+            this.renderer.camera.targetZoom = Math.max(0.5, this.renderer.camera.targetZoom - 0.2);
+        };
+        document.getElementById('btnRotateL').onclick = () => {
+            // Pan left
+            this.renderer.camera.targetX += 50;
+        };
+        document.getElementById('btnRotateR').onclick = () => {
+            // Pan right
+            this.renderer.camera.targetX -= 50;
+        };
+        document.getElementById('btnReset').onclick = () => {
+            this.renderer.resetCamera();
+        };
     }
 
     showAlert(msg, type) {

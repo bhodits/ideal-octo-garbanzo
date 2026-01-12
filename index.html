@@ -2082,9 +2082,9 @@ class Renderer {
         ctx.strokeRect(0, 0, w, h);
     }
 
-    render(thermal, gameTime) {
-        this.time = gameTime / 1000;
-        this.timeOfDay = (gameTime / 60000) % 24;
+    render(thermal, gameTime, animTime) {
+        this.time = animTime / 1000;  // Real time for smooth animations
+        this.timeOfDay = (gameTime / 3600000) % 24;  // Game time for day/night cycle
 
         // Update camera smoothly
         this.updateCamera();
@@ -2202,7 +2202,8 @@ class Game {
         this.thermal = new ThermalSystem();
         this.renderer = new Renderer(this.canvas, this.miniCanvas);
 
-        this.gameTime = 12 * 60 * 60 * 1000;
+        this.gameTime = 12 * 60 * 60 * 1000;  // Simulation clock (starts at noon)
+        this.animTime = 0;                     // Real time for animations
         this.timeSpeed = 1;
         this.lastTime = 0;
         this.running = false;
@@ -2315,7 +2316,10 @@ class Game {
             const dt = this.lastTime ? ts - this.lastTime : 16;
             this.lastTime = ts;
 
-            // Time advances hour-by-hour (1 hour every ~3 seconds at 1x speed)
+            // Animation time runs at real speed (for smooth visuals)
+            this.animTime += dt;
+
+            // Game time advances hour-by-hour (1 hour every ~3 seconds at 1x speed)
             this.gameTime += dt * this.timeSpeed * 1200;
             const hour = Math.floor((this.gameTime / 3600000) % 24);
 
@@ -2323,7 +2327,7 @@ class Game {
             if (emergency === 'ENGAGED') this.showAlert('EMERGENCY COOLING ENGAGED - Temperature critical!', 'critical');
             else if (emergency === 'DISENGAGED') this.showAlert('Emergency cooling disengaged - Normalized', 'success');
 
-            this.renderer.render(this.thermal, this.gameTime);
+            this.renderer.render(this.thermal, this.gameTime, this.animTime);
             this.updateUI();
         } catch (err) {
             console.error('Game loop error:', err);

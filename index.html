@@ -902,77 +902,125 @@ class Renderer {
     }
 
     generateScenery() {
-        // Trees around Lake Livara and community
+        // Trees around Lake Livara and community - matching master plan layout
         this.trees = [];
 
-        // Trees along the western shore
-        for (let i = 0; i < 30; i++) {
+        // Dense forest on western edge of property
+        for (let i = 0; i < 35; i++) {
             this.trees.push({
-                x: 0.08 + Math.random() * 0.08,
-                y: 0.25 + Math.random() * 0.35,
+                x: 0.05 + Math.random() * 0.12,
+                y: 0.20 + Math.random() * 0.50,
                 size: 0.5 + Math.random() * 0.6,
                 type: Math.floor(Math.random() * 3)
             });
         }
 
-        // Trees along the eastern shore
-        for (let i = 0; i < 30; i++) {
+        // Dense forest on eastern edge
+        for (let i = 0; i < 35; i++) {
             this.trees.push({
-                x: 0.84 + Math.random() * 0.08,
-                y: 0.25 + Math.random() * 0.35,
+                x: 0.83 + Math.random() * 0.12,
+                y: 0.20 + Math.random() * 0.50,
                 size: 0.5 + Math.random() * 0.6,
                 type: Math.floor(Math.random() * 3)
             });
         }
 
-        // Trees in community area
-        for (let i = 0; i < 25; i++) {
+        // Trees around lake perimeter (inside development)
+        for (let i = 0; i < 40; i++) {
+            const angle = i * 0.16;
+            const r = 0.22 + Math.random() * 0.06;
             this.trees.push({
-                x: 0.15 + Math.random() * 0.7,
-                y: 0.62 + Math.random() * 0.12,
-                size: 0.4 + Math.random() * 0.4,
+                x: 0.5 + Math.cos(angle) * r,
+                y: 0.35 + Math.sin(angle) * r * 0.6,
+                size: 0.3 + Math.random() * 0.4,
                 type: Math.floor(Math.random() * 3)
             });
         }
 
-        // Boats on Lake Livara
+        // Trees in southern community/downtown area
+        for (let i = 0; i < 20; i++) {
+            this.trees.push({
+                x: 0.20 + Math.random() * 0.60,
+                y: 0.60 + Math.random() * 0.15,
+                size: 0.3 + Math.random() * 0.3,
+                type: Math.floor(Math.random() * 3)
+            });
+        }
+
+        // Boats on Lake Livara - positioned in the lake area
         this.boats = [];
-        for (let i = 0; i < 8; i++) {
-            const finger = Math.floor(Math.random() * 3);
-            const baseX = 0.35 + finger * 0.15;
+        for (let i = 0; i < 10; i++) {
             this.boats.push({
-                x: baseX + (Math.random() - 0.5) * 0.08,
-                y: 0.28 + Math.random() * 0.15,
+                x: 0.38 + Math.random() * 0.24,
+                y: 0.22 + Math.random() * 0.20,
                 angle: Math.random() * Math.PI * 2,
                 speed: 0.0001 + Math.random() * 0.0002,
                 type: Math.floor(Math.random() * 3)
             });
         }
 
-        // Community buildings
+        // Community buildings - matching master plan layout
         this.buildings = [];
 
-        // Hotels and resorts along the shore
-        for (let i = 0; i < 5; i++) {
+        // Western shore community (curved residential - visible in master plan)
+        for (let i = 0; i < 6; i++) {
+            const angle = -0.3 + i * 0.15;
             this.buildings.push({
-                x: 0.18 + i * 0.15,
-                y: 0.56,
-                w: 0.06,
-                h: 0.04,
-                floors: 3 + Math.floor(Math.random() * 4),
+                x: 0.28 + Math.cos(angle) * 0.06,
+                y: 0.38 + i * 0.04,
+                w: 0.04,
+                h: 0.025,
+                floors: 2 + Math.floor(Math.random() * 2),
+                type: 'residential'
+            });
+        }
+
+        // Eastern shore community
+        for (let i = 0; i < 6; i++) {
+            this.buildings.push({
+                x: 0.68 + Math.sin(i * 0.3) * 0.04,
+                y: 0.36 + i * 0.04,
+                w: 0.04,
+                h: 0.025,
+                floors: 2 + Math.floor(Math.random() * 2),
+                type: 'residential'
+            });
+        }
+
+        // Southern shore resorts/hotels (near lake edge)
+        for (let i = 0; i < 4; i++) {
+            this.buildings.push({
+                x: 0.35 + i * 0.08,
+                y: 0.52,
+                w: 0.05,
+                h: 0.03,
+                floors: 3 + Math.floor(Math.random() * 3),
                 type: 'hotel'
             });
         }
 
-        // Downtown buildings
-        for (let i = 0; i < 8; i++) {
+        // Downtown/commercial area (south of thermal amenities)
+        for (let i = 0; i < 6; i++) {
             this.buildings.push({
-                x: 0.22 + i * 0.07,
-                y: 0.68 + (i % 2) * 0.06,
-                w: 0.04,
+                x: 0.25 + i * 0.085,
+                y: 0.70 + (i % 2) * 0.04,
+                w: 0.05,
                 h: 0.03,
                 floors: 2 + Math.floor(Math.random() * 3),
                 type: 'commercial'
+            });
+        }
+
+        // Circular resort development (visible in master plan southwest)
+        for (let i = 0; i < 8; i++) {
+            const angle = i * Math.PI / 4;
+            this.buildings.push({
+                x: 0.22 + Math.cos(angle) * 0.04,
+                y: 0.62 + Math.sin(angle) * 0.03,
+                w: 0.025,
+                h: 0.02,
+                floors: 2,
+                type: 'resort'
             });
         }
     }
@@ -1175,42 +1223,42 @@ class Renderer {
     drawLakeLivara(thermal) {
         const temp = thermal.zones.reservoir.temp;
         const cx = this.width * 0.5;
-        const baseY = this.height * 0.20;
+        const baseY = this.height * 0.15;
 
-        // Lake Livara - 3-finger dinosaur footprint shape
-        // Define the three "toes" pointing northward and the "heel" to the south
+        // Lake Livara - matching master plan's irregular multi-arm shape
+        // Main body with northwest arm, northeast inlet, and southern coves
 
         // Shore/beach around the lake
         this.ctx.fillStyle = '#b8a070';
         this.ctx.beginPath();
-        this.drawDinoFootprint(cx, baseY, 1.06);
+        this.drawLakeShape(cx, baseY, 1.04);
         this.ctx.fill();
 
-        // Water gradient
-        const waterGrad = this.ctx.createLinearGradient(cx, baseY, cx, baseY + this.height * 0.35);
-        waterGrad.addColorStop(0, this.tempToColor(temp + 5, 0.9));
+        // Water gradient - cooler in north (closer to Ozarks), warmer in south (from data center)
+        const waterGrad = this.ctx.createLinearGradient(cx, baseY, cx, baseY + this.height * 0.38);
+        waterGrad.addColorStop(0, this.tempToColor(temp - 5, 0.9));  // Cooler at north
         waterGrad.addColorStop(0.5, this.tempToColor(temp, 0.85));
-        waterGrad.addColorStop(1, this.tempToColor(temp - 3, 0.8));
+        waterGrad.addColorStop(1, this.tempToColor(temp + 8, 0.8));  // Warmer at south (from data center)
 
         this.ctx.fillStyle = waterGrad;
         this.ctx.beginPath();
-        this.drawDinoFootprint(cx, baseY, 1.0);
+        this.drawLakeShape(cx, baseY, 1.0);
         this.ctx.fill();
 
-        // Wave patterns in each finger
+        // Wave patterns
         this.ctx.save();
         this.ctx.beginPath();
-        this.drawDinoFootprint(cx, baseY, 0.98);
+        this.drawLakeShape(cx, baseY, 0.98);
         this.ctx.clip();
 
         // Animated waves
-        this.ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+        this.ctx.strokeStyle = 'rgba(255,255,255,0.12)';
         this.ctx.lineWidth = 1;
-        for (let w = 0; w < 8; w++) {
+        for (let w = 0; w < 10; w++) {
             this.ctx.beginPath();
-            for (let x = this.width * 0.2; x < this.width * 0.8; x += 5) {
-                const y = baseY + this.height * 0.1 + w * 20 + Math.sin(x * 0.03 + this.time * 2 + w) * 3;
-                if (x === this.width * 0.2) this.ctx.moveTo(x, y);
+            for (let x = this.width * 0.25; x < this.width * 0.75; x += 5) {
+                const y = baseY + this.height * 0.08 + w * 18 + Math.sin(x * 0.025 + this.time * 1.5 + w) * 3;
+                if (x === this.width * 0.25) this.ctx.moveTo(x, y);
                 else this.ctx.lineTo(x, y);
             }
             this.ctx.stroke();
@@ -1218,13 +1266,13 @@ class Renderer {
 
         // Sun reflection
         if (this.timeOfDay >= 7 && this.timeOfDay < 18) {
-            const sunX = cx + Math.sin(this.time * 0.5) * 30;
-            const sunY = baseY + this.height * 0.15;
-            for (let i = 0; i < 6; i++) {
+            const sunX = cx + Math.sin(this.time * 0.5) * 20;
+            const sunY = baseY + this.height * 0.18;
+            for (let i = 0; i < 5; i++) {
                 const shimmer = Math.sin(this.time * 4 + i) * 0.5 + 0.5;
-                this.ctx.fillStyle = `rgba(255,255,200,${0.2 * shimmer})`;
+                this.ctx.fillStyle = `rgba(255,255,200,${0.15 * shimmer})`;
                 this.ctx.beginPath();
-                this.ctx.ellipse(sunX, sunY + i * 12, 25 - i * 3, 6, 0, 0, Math.PI * 2);
+                this.ctx.ellipse(sunX, sunY + i * 15, 20 - i * 3, 5, 0, 0, Math.PI * 2);
                 this.ctx.fill();
             }
         }
@@ -1232,60 +1280,91 @@ class Renderer {
         this.ctx.restore();
 
         // Label
-        this.ctx.fillStyle = 'rgba(255,255,255,0.5)';
-        this.ctx.font = 'bold 14px system-ui';
+        this.ctx.fillStyle = 'rgba(255,255,255,0.6)';
+        this.ctx.font = 'bold 16px system-ui';
         this.ctx.textAlign = 'center';
-        this.ctx.fillText('LAKE LIVARA', cx, baseY + this.height * 0.18);
+        this.ctx.fillText('LAKE LIVARA', cx, baseY + this.height * 0.20);
 
-        this.ctx.fillStyle = 'rgba(255,255,255,0.3)';
-        this.ctx.font = '10px system-ui';
-        this.ctx.fillText(`${Math.round(temp)}°F`, cx, baseY + this.height * 0.21);
+        this.ctx.fillStyle = 'rgba(255,255,255,0.4)';
+        this.ctx.font = '11px system-ui';
+        this.ctx.fillText(`${Math.round(temp)}°F`, cx, baseY + this.height * 0.23);
     }
 
-    drawDinoFootprint(cx, baseY, scale) {
+    drawLakeShape(cx, baseY, scale) {
         const w = this.width;
         const h = this.height;
 
-        // Three toes pointing north, heel to south
-        // Left toe
-        this.ctx.moveTo(cx - w * 0.18 * scale, baseY + h * 0.28 * scale);
+        // Matching the master plan's distinctive shape:
+        // - Northwest arm extending up-left
+        // - Northeast inlet/cove
+        // - Main central body
+        // - Southern portion with coves connecting to thermal areas
+
+        // Start from southwest corner
+        this.ctx.moveTo(cx - w * 0.20 * scale, baseY + h * 0.35 * scale);
+
+        // Western edge going north with coves
         this.ctx.quadraticCurveTo(
-            cx - w * 0.22 * scale, baseY + h * 0.12 * scale,
-            cx - w * 0.15 * scale, baseY + h * 0.02 * scale
-        );
-        this.ctx.quadraticCurveTo(
-            cx - w * 0.10 * scale, baseY + h * 0.01 * scale,
-            cx - w * 0.08 * scale, baseY + h * 0.08 * scale
+            cx - w * 0.24 * scale, baseY + h * 0.28 * scale,
+            cx - w * 0.22 * scale, baseY + h * 0.20 * scale
         );
 
-        // Middle toe (longest)
+        // Northwest arm (prominent feature in master plan)
         this.ctx.quadraticCurveTo(
-            cx - w * 0.04 * scale, baseY - h * 0.02 * scale,
-            cx, baseY - h * 0.04 * scale
+            cx - w * 0.26 * scale, baseY + h * 0.12 * scale,
+            cx - w * 0.20 * scale, baseY + h * 0.05 * scale
         );
         this.ctx.quadraticCurveTo(
-            cx + w * 0.04 * scale, baseY - h * 0.02 * scale,
-            cx + w * 0.08 * scale, baseY + h * 0.08 * scale
+            cx - w * 0.15 * scale, baseY + h * 0.02 * scale,
+            cx - w * 0.10 * scale, baseY + h * 0.06 * scale
         );
 
-        // Right toe
+        // Northern edge - connects to Lake of Ozarks area
         this.ctx.quadraticCurveTo(
-            cx + w * 0.10 * scale, baseY + h * 0.01 * scale,
-            cx + w * 0.15 * scale, baseY + h * 0.02 * scale
+            cx - w * 0.05 * scale, baseY + h * 0.01 * scale,
+            cx, baseY - h * 0.02 * scale
         );
         this.ctx.quadraticCurveTo(
-            cx + w * 0.22 * scale, baseY + h * 0.12 * scale,
+            cx + w * 0.05 * scale, baseY + h * 0.01 * scale,
+            cx + w * 0.12 * scale, baseY + h * 0.04 * scale
+        );
+
+        // Northeast inlet/arm
+        this.ctx.quadraticCurveTo(
+            cx + w * 0.18 * scale, baseY + h * 0.02 * scale,
+            cx + w * 0.22 * scale, baseY + h * 0.08 * scale
+        );
+        this.ctx.quadraticCurveTo(
+            cx + w * 0.20 * scale, baseY + h * 0.14 * scale,
+            cx + w * 0.16 * scale, baseY + h * 0.16 * scale
+        );
+
+        // Eastern edge with cove
+        this.ctx.quadraticCurveTo(
+            cx + w * 0.22 * scale, baseY + h * 0.22 * scale,
             cx + w * 0.18 * scale, baseY + h * 0.28 * scale
         );
 
-        // Heel (south - wider, rounded)
+        // Southeast cove (smaller water feature visible in master plan)
         this.ctx.quadraticCurveTo(
-            cx + w * 0.20 * scale, baseY + h * 0.36 * scale,
+            cx + w * 0.20 * scale, baseY + h * 0.32 * scale,
+            cx + w * 0.15 * scale, baseY + h * 0.36 * scale
+        );
+
+        // Southern edge - where thermal water enters from community
+        this.ctx.quadraticCurveTo(
+            cx + w * 0.08 * scale, baseY + h * 0.40 * scale,
             cx, baseY + h * 0.38 * scale
         );
         this.ctx.quadraticCurveTo(
-            cx - w * 0.20 * scale, baseY + h * 0.36 * scale,
-            cx - w * 0.18 * scale, baseY + h * 0.28 * scale
+            cx - w * 0.08 * scale, baseY + h * 0.40 * scale,
+            cx - w * 0.15 * scale, baseY + h * 0.36 * scale
+        );
+
+        // Back to start
+        this.ctx.quadraticCurveTo(
+            cx - w * 0.18 * scale, baseY + h * 0.38 * scale,
+            cx - w * 0.20 * scale, baseY + h * 0.35 * scale
         );
 
         this.ctx.closePath();
@@ -1469,9 +1548,21 @@ class Renderer {
         this.ctx.fill();
 
         // Building colors based on type
-        const colors = type === 'hotel'
-            ? { front: '#e8e0d0', side: '#d0c8b8', roof: '#b89070', window: '#6090c0' }
-            : { front: '#d0d8e0', side: '#b8c0c8', roof: '#8090a0', window: '#406080' };
+        let colors;
+        switch (type) {
+            case 'hotel':
+                colors = { front: '#e8e0d0', side: '#d0c8b8', roof: '#b89070', window: '#6090c0' };
+                break;
+            case 'residential':
+                colors = { front: '#d8d0c8', side: '#c8c0b8', roof: '#7a5a40', window: '#5080a0' };
+                break;
+            case 'resort':
+                colors = { front: '#f0e8e0', side: '#e0d8d0', roof: '#906050', window: '#70a0c0' };
+                break;
+            case 'commercial':
+            default:
+                colors = { front: '#d0d8e0', side: '#b8c0c8', roof: '#8090a0', window: '#406080' };
+        }
 
         // Front face
         const frontGrad = this.ctx.createLinearGradient(x, y + h - totalH, x, y + h);
@@ -2250,9 +2341,10 @@ class Renderer {
     drawSteamFog(thermal) {
         const ambient = thermal.ambientTemp;
 
+        // Steam fog from thermal amenities - positions match render layout
         const fogZones = [
-            { key: 'spa', x: 0.12, y: 0.44 },
-            { key: 'rapids', x: 0.78, y: 0.44 }
+            { key: 'spa', x: 0.17, y: 0.58 },
+            { key: 'rapids', x: 0.83, y: 0.58 }
         ];
 
         for (const fz of fogZones) {
@@ -2280,19 +2372,21 @@ class Renderer {
     drawPipes(thermal) {
         const flowSpeed = thermal.loopA.flowRate / 2500;
 
-        // Define pipe routes for north-to-south layout
-        // Data Center (south) → Heat Exchanger → Community Areas → Lake (north)
+        // Water flows NORTH from Data Center through amenities to Lake
+        // Hot water starts at south, cools as it passes through thermal features
         const pipes = [
-            // Loop A: Data Center to Heat Exchanger (hot water)
-            { from: [0.5, 0.82], to: [0.5, 0.76], temp: thermal.loopA.supplyTemp, label: 'LOOP A' },
-            // Loop B: Heat Exchanger to community amenities (warm water)
-            { from: [0.5, 0.70], to: [0.5, 0.58], temp: thermal.loopB.supplyTemp, label: 'LOOP B' },
-            // Branch to Thermal Spa (west)
-            { from: [0.42, 0.72], to: [0.17, 0.57], temp: thermal.loopB.supplyTemp - 5, label: null },
-            // Branch to Beach area (east of spa)
-            { from: [0.45, 0.72], to: [0.32, 0.58], temp: thermal.loopB.supplyTemp - 8, label: null },
-            // Return from lake to reservoir (cooled water)
-            { from: [0.5, 0.55], to: [0.5, 0.48], temp: thermal.loopB.returnTemp, label: 'RETURN' },
+            // Hot supply from Data Center going north to Heat Exchanger
+            { from: [0.5, 0.84], to: [0.5, 0.76], temp: thermal.loopA.supplyTemp, label: 'HOT SUPPLY', flowDir: -1 },
+            // Warm water continuing north to community thermal areas
+            { from: [0.5, 0.72], to: [0.5, 0.58], temp: thermal.loopB.supplyTemp, label: 'WARM FLOW', flowDir: -1 },
+            // Branch west to Thermal Spa
+            { from: [0.42, 0.70], to: [0.17, 0.58], temp: thermal.loopB.supplyTemp - 5, label: 'SPA', flowDir: -1 },
+            // Branch east to Rapids area
+            { from: [0.58, 0.70], to: [0.83, 0.58], temp: thermal.loopB.supplyTemp - 8, label: 'RAPIDS', flowDir: -1 },
+            // Cooled water flows into Lake Livara (north)
+            { from: [0.5, 0.54], to: [0.5, 0.46], temp: thermal.zones.reservoir.temp, label: 'TO LAKE', flowDir: -1 },
+            // Cold return from lake back south to Data Center (underground)
+            { from: [0.55, 0.46], to: [0.55, 0.84], temp: thermal.loopB.returnTemp - 10, label: 'COLD RETURN', flowDir: 1, dashed: true },
         ];
 
         for (const pipe of pipes) {
@@ -2304,28 +2398,34 @@ class Renderer {
             const dy = y2 - y1;
             const dist = Math.hypot(dx, dy);
             const angle = Math.atan2(dy, dx);
+            const isDashed = pipe.dashed || false;
 
             // Pipe outer glow
-            this.ctx.strokeStyle = this.tempToColor(pipe.temp, 0.15);
-            this.ctx.lineWidth = 12;
+            this.ctx.strokeStyle = this.tempToColor(pipe.temp, isDashed ? 0.08 : 0.15);
+            this.ctx.lineWidth = isDashed ? 8 : 12;
             this.ctx.lineCap = 'round';
+            if (isDashed) this.ctx.setLineDash([15, 10]);
             this.ctx.beginPath();
             this.ctx.moveTo(x1, y1);
             this.ctx.lineTo(x2, y2);
             this.ctx.stroke();
+            this.ctx.setLineDash([]);
 
             // Pipe core
-            this.ctx.strokeStyle = this.tempToColor(pipe.temp, 0.6);
-            this.ctx.lineWidth = 5;
+            this.ctx.strokeStyle = this.tempToColor(pipe.temp, isDashed ? 0.4 : 0.6);
+            this.ctx.lineWidth = isDashed ? 3 : 5;
+            if (isDashed) this.ctx.setLineDash([15, 10]);
             this.ctx.beginPath();
             this.ctx.moveTo(x1, y1);
             this.ctx.lineTo(x2, y2);
             this.ctx.stroke();
+            this.ctx.setLineDash([]);
 
             // Flow particles as directional arrows/teardrops
             const count = Math.floor(dist / 50);
             for (let i = 0; i < count; i++) {
-                const t = (this.time * flowSpeed + i / count) % 1;
+                const flowDir = pipe.flowDir || 1;
+                const t = ((this.time * flowSpeed * flowDir + i / count) % 1 + 1) % 1;
                 const px = x1 + dx * t;
                 const py = y1 + dy * t;
 
@@ -2334,7 +2434,7 @@ class Renderer {
                 this.ctx.rotate(angle);
 
                 // Teardrop shape pointing in flow direction
-                this.ctx.fillStyle = this.tempToColor(pipe.temp, 0.95);
+                this.ctx.fillStyle = this.tempToColor(pipe.temp, isDashed ? 0.6 : 0.95);
                 this.ctx.beginPath();
                 this.ctx.moveTo(6, 0);
                 this.ctx.quadraticCurveTo(0, -4, -5, 0);
@@ -2344,13 +2444,13 @@ class Renderer {
                 this.ctx.restore();
             }
 
-            // Subtle direction arrow at midpoint
+            // Direction arrow at midpoint
             const mx = x1 + dx * 0.5;
             const my = y1 + dy * 0.5;
             this.ctx.save();
             this.ctx.translate(mx, my);
             this.ctx.rotate(angle);
-            this.ctx.fillStyle = 'rgba(255,255,255,0.4)';
+            this.ctx.fillStyle = isDashed ? 'rgba(100,150,255,0.4)' : 'rgba(255,200,100,0.5)';
             this.ctx.beginPath();
             this.ctx.moveTo(8, 0);
             this.ctx.lineTo(-4, -5);
@@ -2359,7 +2459,7 @@ class Renderer {
             this.ctx.fill();
             this.ctx.restore();
 
-            // Loop label
+            // Pipe label
             if (pipe.label) {
                 const lx = x1 + dx * 0.5 + 15;
                 const ly = y1 + dy * 0.5;
@@ -2379,52 +2479,72 @@ class Renderer {
         ctx.fillStyle = '#0a1520';
         ctx.fillRect(0, 0, w, h);
 
-        // Lake of the Ozarks (north)
+        // Lake of the Ozarks (north - black area in master plan)
         ctx.fillStyle = '#1a4a6a';
-        ctx.fillRect(0, 0, w, h * 0.12);
+        ctx.fillRect(0, 0, w, h * 0.10);
 
-        // Bagnell Dam
+        // Dam
         ctx.fillStyle = '#666';
-        ctx.fillRect(w * 0.15, h * 0.11, w * 0.7, h * 0.04);
+        ctx.fillRect(w * 0.2, h * 0.09, w * 0.6, h * 0.03);
 
-        // Lake Livara (3-finger dinosaur footprint shape)
+        // Lake Livara - multi-arm shape matching master plan
         ctx.fillStyle = this.tempToColor(thermal.zones.reservoir.temp, 0.7);
         ctx.beginPath();
-        // Simplified footprint - three toes and heel
         const cx = w * 0.5;
-        const baseY = h * 0.18;
-        // Left toe
-        ctx.moveTo(cx - w * 0.15, baseY + h * 0.25);
-        ctx.quadraticCurveTo(cx - w * 0.18, baseY + h * 0.1, cx - w * 0.12, baseY);
-        ctx.quadraticCurveTo(cx - w * 0.06, baseY - h * 0.02, cx, baseY - h * 0.04);
-        // Right toe
-        ctx.quadraticCurveTo(cx + w * 0.06, baseY - h * 0.02, cx + w * 0.12, baseY);
-        ctx.quadraticCurveTo(cx + w * 0.18, baseY + h * 0.1, cx + w * 0.15, baseY + h * 0.25);
-        // Heel
-        ctx.quadraticCurveTo(cx + w * 0.12, baseY + h * 0.32, cx, baseY + h * 0.35);
-        ctx.quadraticCurveTo(cx - w * 0.12, baseY + h * 0.32, cx - w * 0.15, baseY + h * 0.25);
+        const baseY = h * 0.15;
+        // Northwest arm
+        ctx.moveTo(cx - w * 0.18, baseY + h * 0.30);
+        ctx.quadraticCurveTo(cx - w * 0.22, baseY + h * 0.18, cx - w * 0.18, baseY + h * 0.06);
+        ctx.quadraticCurveTo(cx - w * 0.12, baseY, cx - w * 0.05, baseY + h * 0.04);
+        // North edge to northeast
+        ctx.quadraticCurveTo(cx, baseY, cx + w * 0.08, baseY + h * 0.03);
+        ctx.quadraticCurveTo(cx + w * 0.18, baseY + h * 0.02, cx + w * 0.18, baseY + h * 0.12);
+        // East edge
+        ctx.quadraticCurveTo(cx + w * 0.20, baseY + h * 0.22, cx + w * 0.15, baseY + h * 0.32);
+        // South edge
+        ctx.quadraticCurveTo(cx + w * 0.08, baseY + h * 0.38, cx, baseY + h * 0.35);
+        ctx.quadraticCurveTo(cx - w * 0.10, baseY + h * 0.38, cx - w * 0.18, baseY + h * 0.30);
         ctx.closePath();
         ctx.fill();
 
-        // Community area (south of lake)
+        // Community developments around lake
         ctx.fillStyle = '#3d5b3d';
-        ctx.fillRect(w * 0.15, h * 0.55, w * 0.7, h * 0.12);
+        ctx.fillRect(w * 0.18, h * 0.50, w * 0.64, h * 0.08);
 
         // Downtown river
         ctx.fillStyle = this.tempToColor(thermal.zones.lazy.temp, 0.7);
-        ctx.fillRect(w * 0.15, h * 0.64, w * 0.7, h * 0.04);
+        ctx.fillRect(w * 0.18, h * 0.62, w * 0.64, h * 0.03);
 
         // Heat exchanger
         ctx.fillStyle = '#5a4030';
-        ctx.fillRect(w * 0.42, h * 0.72, w * 0.16, h * 0.05);
+        ctx.fillRect(w * 0.42, h * 0.70, w * 0.16, h * 0.04);
 
-        // Data center (south)
+        // Data center (south - near highways)
         ctx.fillStyle = '#2a2a4a';
-        ctx.fillRect(w * 0.3, h * 0.82, w * 0.4, h * 0.12);
+        ctx.fillRect(w * 0.28, h * 0.80, w * 0.44, h * 0.14);
 
-        // Thermal Spa indicator
+        // Water flow arrows (northward)
+        ctx.strokeStyle = 'rgba(255,150,50,0.6)';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(w * 0.5, h * 0.82);
+        ctx.lineTo(w * 0.5, h * 0.55);
+        ctx.stroke();
+        // Arrow head
+        ctx.beginPath();
+        ctx.moveTo(w * 0.5, h * 0.55);
+        ctx.lineTo(w * 0.47, h * 0.60);
+        ctx.moveTo(w * 0.5, h * 0.55);
+        ctx.lineTo(w * 0.53, h * 0.60);
+        ctx.stroke();
+
+        // Thermal Spa indicator (west)
         ctx.fillStyle = this.tempToColor(thermal.zones.spa.temp, 0.8);
-        ctx.fillRect(w * 0.12, h * 0.54, w * 0.08, h * 0.06);
+        ctx.fillRect(w * 0.12, h * 0.54, w * 0.06, h * 0.05);
+
+        // Rapids indicator (east)
+        ctx.fillStyle = this.tempToColor(thermal.zones.rapids.temp, 0.8);
+        ctx.fillRect(w * 0.82, h * 0.54, w * 0.06, h * 0.05);
 
         // Border
         ctx.strokeStyle = 'rgba(0,212,255,0.3)';
@@ -2447,38 +2567,40 @@ class Renderer {
         // Apply camera transform for world elements
         this.applyCamera();
 
-        // === NORTH TO SOUTH LAYOUT ===
+        // === LAYOUT MATCHING MASTER PLAN ===
+        // North: Lake of Ozarks → Dam → Lake Livara → Community → Data Center (South)
+        // Water flows NORTH from data center, cools as it passes through amenities
 
-        // 1. Lake of the Ozarks (beyond dam, northernmost)
+        // 1. Lake of the Ozarks (northernmost - black area at top of master plan)
         this.drawLakeOfOzarks();
 
-        // 2. Bagnell Dam
+        // 2. Dam connecting to Ozarks
         this.drawDam();
 
-        // 3. Lake Livara (3-finger dinosaur footprint)
+        // 3. Lake Livara (center - distinctive multi-arm shape)
         this.drawLakeLivara(thermal);
         this.drawBoats(thermal);
 
-        // 4. Terrain around community
+        // 4. Terrain and vegetation around development
         this.drawTerrain();
         this.drawTrees();
 
-        // 5. Livara Community Development (south shore)
+        // 5. Community developments around lake perimeter
         this.drawCommunityBuildings(thermal);
 
-        // 6. Thermal amenities along shore
-        this.drawZone(0.12, 0.54, 0.1, 0.06, 'Thermal Spa', '♨️', thermal, 'spa');
-        this.drawZone(0.28, 0.55, 0.08, 0.05, 'Beach', '🏖️', thermal, 'beach');
+        // 6. Thermal amenities - water passes through these, cooling down
+        this.drawZone(0.12, 0.56, 0.1, 0.06, 'Thermal Spa', '♨️', thermal, 'spa');
+        this.drawZone(0.78, 0.56, 0.1, 0.06, 'Rapids', '🚣', thermal, 'rapids');
         this.drawFountains(thermal);
 
-        // 7. Downtown River (wave surfing + kayaking)
+        // 7. Downtown area with river activities
         this.drawDowntownRiver(thermal);
 
-        // 8. Heat distribution system
+        // 8. Heat distribution system - shows northward flow
         this.drawHeatExchanger(thermal);
         this.drawPipes(thermal);
 
-        // 9. Data Center (southernmost - heat source)
+        // 9. Data Center & Power Generation (southernmost - near highways)
         this.drawDataCenter(thermal);
 
         // Atmospheric effects

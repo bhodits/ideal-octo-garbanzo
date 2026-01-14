@@ -902,42 +902,77 @@ class Renderer {
     }
 
     generateScenery() {
-        // Trees around the perimeter
-        for (let i = 0; i < 80; i++) {
-            const angle = (i / 80) * Math.PI * 2;
-            const r = 0.42 + Math.random() * 0.08;
+        // Trees around Lake Livara and community
+        this.trees = [];
+
+        // Trees along the western shore
+        for (let i = 0; i < 30; i++) {
             this.trees.push({
-                x: 0.5 + Math.cos(angle) * r,
-                y: 0.5 + Math.sin(angle) * r * 0.6,
-                size: 0.6 + Math.random() * 0.6,
+                x: 0.08 + Math.random() * 0.08,
+                y: 0.25 + Math.random() * 0.35,
+                size: 0.5 + Math.random() * 0.6,
                 type: Math.floor(Math.random() * 3)
             });
         }
 
-        // Additional forest areas
-        for (let i = 0; i < 40; i++) {
+        // Trees along the eastern shore
+        for (let i = 0; i < 30; i++) {
             this.trees.push({
-                x: 0.05 + Math.random() * 0.15,
-                y: 0.3 + Math.random() * 0.4,
-                size: 0.5 + Math.random() * 0.7,
-                type: Math.floor(Math.random() * 3)
-            });
-            this.trees.push({
-                x: 0.80 + Math.random() * 0.15,
-                y: 0.3 + Math.random() * 0.4,
-                size: 0.5 + Math.random() * 0.7,
+                x: 0.84 + Math.random() * 0.08,
+                y: 0.25 + Math.random() * 0.35,
+                size: 0.5 + Math.random() * 0.6,
                 type: Math.floor(Math.random() * 3)
             });
         }
 
-        // Boats
-        for (let i = 0; i < 6; i++) {
+        // Trees in community area
+        for (let i = 0; i < 25; i++) {
+            this.trees.push({
+                x: 0.15 + Math.random() * 0.7,
+                y: 0.62 + Math.random() * 0.12,
+                size: 0.4 + Math.random() * 0.4,
+                type: Math.floor(Math.random() * 3)
+            });
+        }
+
+        // Boats on Lake Livara
+        this.boats = [];
+        for (let i = 0; i < 8; i++) {
+            const finger = Math.floor(Math.random() * 3);
+            const baseX = 0.35 + finger * 0.15;
             this.boats.push({
-                x: 0.35 + Math.random() * 0.3,
-                y: 0.25 + Math.random() * 0.15,
+                x: baseX + (Math.random() - 0.5) * 0.08,
+                y: 0.28 + Math.random() * 0.15,
                 angle: Math.random() * Math.PI * 2,
-                speed: 0.0002 + Math.random() * 0.0003,
-                type: Math.floor(Math.random() * 2)
+                speed: 0.0001 + Math.random() * 0.0002,
+                type: Math.floor(Math.random() * 3)
+            });
+        }
+
+        // Community buildings
+        this.buildings = [];
+
+        // Hotels and resorts along the shore
+        for (let i = 0; i < 5; i++) {
+            this.buildings.push({
+                x: 0.18 + i * 0.15,
+                y: 0.56,
+                w: 0.06,
+                h: 0.04,
+                floors: 3 + Math.floor(Math.random() * 4),
+                type: 'hotel'
+            });
+        }
+
+        // Downtown buildings
+        for (let i = 0; i < 8; i++) {
+            this.buildings.push({
+                x: 0.22 + i * 0.07,
+                y: 0.68 + (i % 2) * 0.06,
+                w: 0.04,
+                h: 0.03,
+                floors: 2 + Math.floor(Math.random() * 3),
+                type: 'commercial'
             });
         }
     }
@@ -1137,142 +1172,376 @@ class Renderer {
         this.ctx.fill();
     }
 
-    drawReservoir(thermal) {
-        const cx = this.width * 0.5;
-        const cy = this.height * 0.38;
-        const rx = this.width * 0.32;
-        const ry = this.height * 0.18;
+    drawLakeLivara(thermal) {
         const temp = thermal.zones.reservoir.temp;
+        const cx = this.width * 0.5;
+        const baseY = this.height * 0.20;
 
-        // Sandy beach shore
-        this.ctx.fillStyle = '#c4a574';
+        // Lake Livara - 3-finger dinosaur footprint shape
+        // Define the three "toes" pointing northward and the "heel" to the south
+
+        // Shore/beach around the lake
+        this.ctx.fillStyle = '#b8a070';
         this.ctx.beginPath();
-        this.ctx.ellipse(cx, cy, rx + 15, ry + 8, 0, 0, Math.PI * 2);
+        this.drawDinoFootprint(cx, baseY, 1.06);
         this.ctx.fill();
 
-        // Shore detail - wet sand
-        const wetSandGrad = this.ctx.createRadialGradient(cx, cy, rx - 5, cx, cy, rx + 12);
-        wetSandGrad.addColorStop(0, 'rgba(139,119,90,0.8)');
-        wetSandGrad.addColorStop(1, 'rgba(180,160,120,0.3)');
-        this.ctx.fillStyle = wetSandGrad;
-        this.ctx.beginPath();
-        this.ctx.ellipse(cx, cy, rx + 12, ry + 6, 0, 0, Math.PI * 2);
-        this.ctx.fill();
-
-        // Water base with realistic depth gradient
-        const waterGrad = this.ctx.createRadialGradient(cx, cy - ry * 0.2, 0, cx, cy, rx);
-        const baseColor = this.tempToColor(temp, 1);
-        waterGrad.addColorStop(0, this.tempToColor(temp + 8, 0.95));
-        waterGrad.addColorStop(0.3, this.tempToColor(temp + 3, 0.9));
-        waterGrad.addColorStop(0.6, this.tempToColor(temp, 0.85));
-        waterGrad.addColorStop(1, this.tempToColor(temp - 8, 0.7));
+        // Water gradient
+        const waterGrad = this.ctx.createLinearGradient(cx, baseY, cx, baseY + this.height * 0.35);
+        waterGrad.addColorStop(0, this.tempToColor(temp + 5, 0.9));
+        waterGrad.addColorStop(0.5, this.tempToColor(temp, 0.85));
+        waterGrad.addColorStop(1, this.tempToColor(temp - 3, 0.8));
 
         this.ctx.fillStyle = waterGrad;
         this.ctx.beginPath();
-        this.ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
+        this.drawDinoFootprint(cx, baseY, 1.0);
         this.ctx.fill();
 
-        // Realistic wave physics - multiple wave layers
-        const windSpeed = 0.5 + Math.sin(this.time * 0.1) * 0.3;
+        // Wave patterns in each finger
+        this.ctx.save();
+        this.ctx.beginPath();
+        this.drawDinoFootprint(cx, baseY, 0.98);
+        this.ctx.clip();
 
-        // Primary waves (wind-driven)
-        for (let ring = 0; ring < 12; ring++) {
-            const ringR = rx * (0.15 + ring * 0.07);
-            const ringRy = ry * (0.15 + ring * 0.07);
-            const waveAmplitude = 2 + ring * 0.5;
-            const waveFreq = 6 - ring * 0.3;
-            const alpha = 0.18 - ring * 0.012;
-
-            this.ctx.strokeStyle = `rgba(255,255,255,${alpha})`;
-            this.ctx.lineWidth = 1.5 - ring * 0.08;
+        // Animated waves
+        this.ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+        this.ctx.lineWidth = 1;
+        for (let w = 0; w < 8; w++) {
             this.ctx.beginPath();
-
-            for (let a = 0; a < Math.PI * 2; a += 0.05) {
-                // Combine multiple wave frequencies for realism
-                const wave1 = Math.sin(a * waveFreq + this.time * 2.5 * windSpeed + ring * 0.5) * waveAmplitude;
-                const wave2 = Math.sin(a * (waveFreq * 2.3) + this.time * 3.2 + ring) * (waveAmplitude * 0.4);
-                const wave3 = Math.sin(a * (waveFreq * 0.7) - this.time * 1.8) * (waveAmplitude * 0.6);
-                const totalWave = wave1 + wave2 + wave3;
-
-                const px = cx + Math.cos(a) * (ringR + totalWave);
-                const py = cy + Math.sin(a) * (ringRy + totalWave * 0.5);
-                if (a === 0) this.ctx.moveTo(px, py);
-                else this.ctx.lineTo(px, py);
+            for (let x = this.width * 0.2; x < this.width * 0.8; x += 5) {
+                const y = baseY + this.height * 0.1 + w * 20 + Math.sin(x * 0.03 + this.time * 2 + w) * 3;
+                if (x === this.width * 0.2) this.ctx.moveTo(x, y);
+                else this.ctx.lineTo(x, y);
             }
-            this.ctx.closePath();
             this.ctx.stroke();
         }
 
-        // Caustic light patterns (underwater light refraction)
+        // Sun reflection
         if (this.timeOfDay >= 7 && this.timeOfDay < 18) {
-            this.ctx.save();
-            this.ctx.beginPath();
-            this.ctx.ellipse(cx, cy, rx - 5, ry - 3, 0, 0, Math.PI * 2);
-            this.ctx.clip();
-
-            for (let i = 0; i < 25; i++) {
-                const cx2 = cx + Math.sin(i * 2.7 + this.time * 0.8) * rx * 0.6;
-                const cy2 = cy + Math.cos(i * 3.1 + this.time * 0.6) * ry * 0.5;
-                const size = 15 + Math.sin(i + this.time * 2) * 8;
-                const alpha = 0.03 + Math.sin(i * 1.3 + this.time * 1.5) * 0.02;
-
-                const causticGrad = this.ctx.createRadialGradient(cx2, cy2, 0, cx2, cy2, size);
-                causticGrad.addColorStop(0, `rgba(255,255,200,${alpha})`);
-                causticGrad.addColorStop(1, 'transparent');
-                this.ctx.fillStyle = causticGrad;
-                this.ctx.fillRect(cx2 - size, cy2 - size, size * 2, size * 2);
-            }
-            this.ctx.restore();
-        }
-
-        // Sun/moon reflection on water
-        const sunProgress = (this.timeOfDay - 6) / 12;
-        if (this.timeOfDay >= 7 && this.timeOfDay < 18) {
-            const reflectX = cx + (sunProgress - 0.5) * rx * 0.8;
-            const reflectY = cy - ry * 0.2;
-
-            // Shimmering reflection
-            for (let i = 0; i < 8; i++) {
-                const shimmerX = reflectX + Math.sin(this.time * 3 + i) * 15;
-                const shimmerY = reflectY + i * 8 + Math.sin(this.time * 4 + i * 2) * 3;
-                const shimmerW = 30 - i * 2;
-                const shimmerH = 4 + Math.sin(this.time * 5 + i) * 2;
-
-                this.ctx.fillStyle = `rgba(255,255,200,${0.3 - i * 0.03})`;
+            const sunX = cx + Math.sin(this.time * 0.5) * 30;
+            const sunY = baseY + this.height * 0.15;
+            for (let i = 0; i < 6; i++) {
+                const shimmer = Math.sin(this.time * 4 + i) * 0.5 + 0.5;
+                this.ctx.fillStyle = `rgba(255,255,200,${0.2 * shimmer})`;
                 this.ctx.beginPath();
-                this.ctx.ellipse(shimmerX, shimmerY, shimmerW, shimmerH, 0, 0, Math.PI * 2);
+                this.ctx.ellipse(sunX, sunY + i * 12, 25 - i * 3, 6, 0, 0, Math.PI * 2);
                 this.ctx.fill();
             }
-        } else if (this.timeOfDay >= 20 || this.timeOfDay < 5) {
-            // Moon reflection
-            const moonReflectGrad = this.ctx.createRadialGradient(cx + rx * 0.3, cy, 0, cx + rx * 0.3, cy, 40);
-            moonReflectGrad.addColorStop(0, 'rgba(200,210,255,0.15)');
-            moonReflectGrad.addColorStop(1, 'transparent');
-            this.ctx.fillStyle = moonReflectGrad;
+        }
+
+        this.ctx.restore();
+
+        // Label
+        this.ctx.fillStyle = 'rgba(255,255,255,0.5)';
+        this.ctx.font = 'bold 14px system-ui';
+        this.ctx.textAlign = 'center';
+        this.ctx.fillText('LAKE LIVARA', cx, baseY + this.height * 0.18);
+
+        this.ctx.fillStyle = 'rgba(255,255,255,0.3)';
+        this.ctx.font = '10px system-ui';
+        this.ctx.fillText(`${Math.round(temp)}°F`, cx, baseY + this.height * 0.21);
+    }
+
+    drawDinoFootprint(cx, baseY, scale) {
+        const w = this.width;
+        const h = this.height;
+
+        // Three toes pointing north, heel to south
+        // Left toe
+        this.ctx.moveTo(cx - w * 0.18 * scale, baseY + h * 0.28 * scale);
+        this.ctx.quadraticCurveTo(
+            cx - w * 0.22 * scale, baseY + h * 0.12 * scale,
+            cx - w * 0.15 * scale, baseY + h * 0.02 * scale
+        );
+        this.ctx.quadraticCurveTo(
+            cx - w * 0.10 * scale, baseY + h * 0.01 * scale,
+            cx - w * 0.08 * scale, baseY + h * 0.08 * scale
+        );
+
+        // Middle toe (longest)
+        this.ctx.quadraticCurveTo(
+            cx - w * 0.04 * scale, baseY - h * 0.02 * scale,
+            cx, baseY - h * 0.04 * scale
+        );
+        this.ctx.quadraticCurveTo(
+            cx + w * 0.04 * scale, baseY - h * 0.02 * scale,
+            cx + w * 0.08 * scale, baseY + h * 0.08 * scale
+        );
+
+        // Right toe
+        this.ctx.quadraticCurveTo(
+            cx + w * 0.10 * scale, baseY + h * 0.01 * scale,
+            cx + w * 0.15 * scale, baseY + h * 0.02 * scale
+        );
+        this.ctx.quadraticCurveTo(
+            cx + w * 0.22 * scale, baseY + h * 0.12 * scale,
+            cx + w * 0.18 * scale, baseY + h * 0.28 * scale
+        );
+
+        // Heel (south - wider, rounded)
+        this.ctx.quadraticCurveTo(
+            cx + w * 0.20 * scale, baseY + h * 0.36 * scale,
+            cx, baseY + h * 0.38 * scale
+        );
+        this.ctx.quadraticCurveTo(
+            cx - w * 0.20 * scale, baseY + h * 0.36 * scale,
+            cx - w * 0.18 * scale, baseY + h * 0.28 * scale
+        );
+
+        this.ctx.closePath();
+    }
+
+    drawDowntownRiver(thermal) {
+        const riverY = this.height * 0.64;
+        const riverH = this.height * 0.045;
+        const startX = this.width * 0.15;
+        const endX = this.width * 0.85;
+        const temp = thermal.zones.lazy.temp;
+
+        // River banks
+        this.ctx.fillStyle = '#8a7a60';
+        this.ctx.beginPath();
+        this.ctx.moveTo(startX - 10, riverY - 8);
+        this.ctx.lineTo(endX + 10, riverY - 8);
+        this.ctx.lineTo(endX + 15, riverY + riverH + 8);
+        this.ctx.lineTo(startX - 15, riverY + riverH + 8);
+        this.ctx.closePath();
+        this.ctx.fill();
+
+        // Stone edge
+        this.ctx.fillStyle = '#6a6a6a';
+        this.ctx.fillRect(startX - 5, riverY - 4, endX - startX + 10, 4);
+        this.ctx.fillRect(startX - 5, riverY + riverH, endX - startX + 10, 4);
+
+        // River water
+        const riverGrad = this.ctx.createLinearGradient(startX, riverY, endX, riverY);
+        riverGrad.addColorStop(0, this.tempToColor(temp, 0.85));
+        riverGrad.addColorStop(0.5, this.tempToColor(temp + 3, 0.9));
+        riverGrad.addColorStop(1, this.tempToColor(temp - 2, 0.85));
+        this.ctx.fillStyle = riverGrad;
+        this.ctx.fillRect(startX, riverY, endX - startX, riverH);
+
+        // Water flow animation
+        this.ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+        this.ctx.lineWidth = 2;
+        for (let i = 0; i < 15; i++) {
+            const flowX = startX + ((this.time * 50 + i * 60) % (endX - startX));
             this.ctx.beginPath();
-            this.ctx.ellipse(cx + rx * 0.3, cy, 50, 25, 0, 0, Math.PI * 2);
+            this.ctx.moveTo(flowX, riverY + 5);
+            this.ctx.lineTo(flowX + 20, riverY + riverH / 2);
+            this.ctx.lineTo(flowX, riverY + riverH - 5);
+            this.ctx.stroke();
+        }
+
+        // Wave Surfing section (left side)
+        const waveX = startX + (endX - startX) * 0.2;
+        this.drawWaveSurfing(waveX, riverY, riverH, thermal);
+
+        // River Kayaking section (right side)
+        const kayakX = startX + (endX - startX) * 0.7;
+        this.drawRiverKayaking(kayakX, riverY, riverH);
+
+        // Label
+        this.ctx.fillStyle = 'rgba(255,255,255,0.6)';
+        this.ctx.font = 'bold 11px system-ui';
+        this.ctx.textAlign = 'center';
+        this.ctx.fillText('DOWNTOWN RIVER', this.width * 0.5, riverY - 12);
+    }
+
+    drawWaveSurfing(x, y, h, thermal) {
+        const load = thermal.serverLoad;
+
+        // Wave machine structure
+        this.ctx.fillStyle = '#4a4a5a';
+        this.ctx.fillRect(x - 40, y - 5, 80, h + 10);
+
+        // Animated standing wave
+        const waveHeight = 15 + (load / 100) * 20;
+        this.ctx.fillStyle = 'rgba(100,180,255,0.8)';
+        this.ctx.beginPath();
+        for (let i = 0; i < 10; i++) {
+            const wx = x - 30 + i * 8;
+            const wy = y + h / 2 + Math.sin(this.time * 8 + i * 0.5) * waveHeight * 0.3;
+            const wh = waveHeight + Math.sin(this.time * 6 + i) * 5;
+            if (i === 0) this.ctx.moveTo(wx, wy);
+            else this.ctx.lineTo(wx, wy - wh);
+        }
+        for (let i = 9; i >= 0; i--) {
+            const wx = x - 30 + i * 8;
+            const wy = y + h / 2;
+            this.ctx.lineTo(wx, wy);
+        }
+        this.ctx.closePath();
+        this.ctx.fill();
+
+        // Spray particles
+        for (let i = 0; i < 8; i++) {
+            const px = x - 20 + Math.random() * 40;
+            const py = y + h / 2 - waveHeight - Math.random() * 15;
+            const ps = 2 + Math.random() * 3;
+            this.ctx.fillStyle = `rgba(200,230,255,${0.3 + Math.random() * 0.3})`;
+            this.ctx.beginPath();
+            this.ctx.arc(px, py, ps, 0, Math.PI * 2);
             this.ctx.fill();
         }
 
-        // Foam at edges
-        this.ctx.strokeStyle = 'rgba(255,255,255,0.4)';
-        this.ctx.lineWidth = 3;
-        this.ctx.setLineDash([8, 12]);
-        this.ctx.beginPath();
-        for (let a = 0; a < Math.PI * 2; a += 0.08) {
-            const foam = Math.sin(a * 15 + this.time * 3) * 2;
-            const px = cx + Math.cos(a) * (rx - 2 + foam);
-            const py = cy + Math.sin(a) * (ry - 1 + foam * 0.5);
-            if (a === 0) this.ctx.moveTo(px, py);
-            else this.ctx.lineTo(px, py);
+        // Label
+        this.ctx.fillStyle = '#00ccff';
+        this.ctx.font = 'bold 9px system-ui';
+        this.ctx.textAlign = 'center';
+        this.ctx.fillText('WAVE SURF', x, y + h + 18);
+    }
+
+    drawRiverKayaking(x, y, h) {
+        // Rapids section markers
+        this.ctx.fillStyle = 'rgba(255,255,255,0.2)';
+        for (let i = 0; i < 5; i++) {
+            const rx = x - 30 + i * 15;
+            const ry = y + 5 + Math.sin(this.time * 3 + i) * 3;
+            this.ctx.beginPath();
+            this.ctx.arc(rx, ry + h / 2, 8, 0, Math.PI * 2);
+            this.ctx.fill();
         }
-        this.ctx.stroke();
-        this.ctx.setLineDash([]);
+
+        // Animated kayaks
+        for (let i = 0; i < 3; i++) {
+            const kx = x - 40 + ((this.time * 30 + i * 50) % 100);
+            const ky = y + h * 0.3 + i * h * 0.25 + Math.sin(this.time * 4 + i) * 3;
+
+            // Kayak body
+            this.ctx.fillStyle = ['#ff6644', '#44cc44', '#4488ff'][i];
+            this.ctx.beginPath();
+            this.ctx.ellipse(kx, ky, 12, 4, 0, 0, Math.PI * 2);
+            this.ctx.fill();
+
+            // Paddler
+            this.ctx.fillStyle = '#ffcc88';
+            this.ctx.beginPath();
+            this.ctx.arc(kx, ky - 3, 3, 0, Math.PI * 2);
+            this.ctx.fill();
+
+            // Paddle
+            this.ctx.strokeStyle = '#8b4513';
+            this.ctx.lineWidth = 2;
+            const paddleAngle = Math.sin(this.time * 6 + i * 2) * 0.5;
+            this.ctx.beginPath();
+            this.ctx.moveTo(kx - 8 * Math.cos(paddleAngle), ky - 8 * Math.sin(paddleAngle));
+            this.ctx.lineTo(kx + 8 * Math.cos(paddleAngle), ky + 8 * Math.sin(paddleAngle));
+            this.ctx.stroke();
+        }
+
+        // Label
+        this.ctx.fillStyle = '#00ccff';
+        this.ctx.font = 'bold 9px system-ui';
+        this.ctx.textAlign = 'center';
+        this.ctx.fillText('KAYAKING', x, y + h + 18);
+    }
+
+    drawCommunityBuildings(thermal) {
+        // Draw 3D isometric buildings along the south shore of Lake Livara
+        if (!this.buildings) return;
+
+        for (const bld of this.buildings) {
+            this.draw3DBuilding(
+                bld.x * this.width,
+                bld.y * this.height,
+                bld.w * this.width,
+                bld.h * this.height,
+                bld.floors,
+                bld.type
+            );
+        }
+    }
+
+    draw3DBuilding(x, y, w, h, floors, type) {
+        const floorH = 12;
+        const totalH = floors * floorH;
+        const depth = w * 0.4;
+
+        // Building shadow
+        this.ctx.fillStyle = 'rgba(0,0,0,0.2)';
+        this.ctx.beginPath();
+        this.ctx.moveTo(x + 5, y + h + 3);
+        this.ctx.lineTo(x + w + 5, y + h + 3);
+        this.ctx.lineTo(x + w + depth + 5, y + h - totalH + depth + 3);
+        this.ctx.lineTo(x + depth + 5, y + h - totalH + depth + 3);
+        this.ctx.closePath();
+        this.ctx.fill();
+
+        // Building colors based on type
+        const colors = type === 'hotel'
+            ? { front: '#e8e0d0', side: '#d0c8b8', roof: '#b89070', window: '#6090c0' }
+            : { front: '#d0d8e0', side: '#b8c0c8', roof: '#8090a0', window: '#406080' };
+
+        // Front face
+        const frontGrad = this.ctx.createLinearGradient(x, y + h - totalH, x, y + h);
+        frontGrad.addColorStop(0, colors.front);
+        frontGrad.addColorStop(1, colors.side);
+        this.ctx.fillStyle = frontGrad;
+        this.ctx.fillRect(x, y + h - totalH, w, totalH);
+
+        // Right side (3D depth)
+        this.ctx.fillStyle = colors.side;
+        this.ctx.beginPath();
+        this.ctx.moveTo(x + w, y + h - totalH);
+        this.ctx.lineTo(x + w + depth, y + h - totalH + depth * 0.6);
+        this.ctx.lineTo(x + w + depth, y + h + depth * 0.6);
+        this.ctx.lineTo(x + w, y + h);
+        this.ctx.closePath();
+        this.ctx.fill();
+
+        // Roof
+        this.ctx.fillStyle = colors.roof;
+        this.ctx.beginPath();
+        this.ctx.moveTo(x, y + h - totalH);
+        this.ctx.lineTo(x + depth, y + h - totalH + depth * 0.6);
+        this.ctx.lineTo(x + w + depth, y + h - totalH + depth * 0.6);
+        this.ctx.lineTo(x + w, y + h - totalH);
+        this.ctx.closePath();
+        this.ctx.fill();
+
+        // Windows
+        this.ctx.fillStyle = colors.window;
+        const windowW = w * 0.15;
+        const windowH = floorH * 0.6;
+        const windowGap = (w - windowW * 3) / 4;
+
+        for (let floor = 0; floor < floors; floor++) {
+            const floorY = y + h - (floor + 1) * floorH + floorH * 0.25;
+            for (let win = 0; win < 3; win++) {
+                const winX = x + windowGap + win * (windowW + windowGap);
+
+                // Window glow at night
+                if (this.timeOfDay < 6 || this.timeOfDay >= 19) {
+                    const glowAlpha = 0.3 + Math.sin(this.time + floor + win) * 0.1;
+                    this.ctx.fillStyle = `rgba(255,220,150,${glowAlpha})`;
+                } else {
+                    this.ctx.fillStyle = colors.window;
+                }
+                this.ctx.fillRect(winX, floorY, windowW, windowH);
+            }
+        }
+
+        // Building entrance (for hotels)
+        if (type === 'hotel' && floors >= 4) {
+            this.ctx.fillStyle = '#4a3020';
+            this.ctx.fillRect(x + w * 0.35, y + h - floorH * 0.8, w * 0.3, floorH * 0.8);
+
+            // Awning
+            this.ctx.fillStyle = '#c04040';
+            this.ctx.beginPath();
+            this.ctx.moveTo(x + w * 0.3, y + h - floorH * 0.8);
+            this.ctx.lineTo(x + w * 0.7, y + h - floorH * 0.8);
+            this.ctx.lineTo(x + w * 0.75, y + h - floorH * 0.6);
+            this.ctx.lineTo(x + w * 0.25, y + h - floorH * 0.6);
+            this.ctx.closePath();
+            this.ctx.fill();
+        }
     }
 
     drawFountains(thermal) {
         const cx = this.width * 0.5;
-        const cy = this.height * 0.38;
+        const cy = this.height * 0.52;  // Moved to south shore of lake
         const load = thermal.serverLoad;
         const count = Math.floor(load / 12) + 3;
         const maxH = 120 * (load / 100);
@@ -1369,56 +1638,107 @@ class Renderer {
         }
     }
 
-    drawDam() {
-        const dx = this.width * 0.25;
-        const dy = this.height * 0.18;
-        const dw = this.width * 0.5;
-        const dh = this.height * 0.06;
+    drawLakeOfOzarks() {
+        // Lake of the Ozarks - visible beyond the dam to the north
+        const lx = 0;
+        const ly = 0;
+        const lw = this.width;
+        const lh = this.height * 0.15;
 
-        // Dam structure - 3D effect
+        // Deep blue water of larger lake
+        const ozarksGrad = this.ctx.createLinearGradient(0, ly, 0, ly + lh);
+        ozarksGrad.addColorStop(0, '#1a4a6a');
+        ozarksGrad.addColorStop(1, '#2a5a7a');
+        this.ctx.fillStyle = ozarksGrad;
+        this.ctx.fillRect(lx, ly, lw, lh);
+
+        // Subtle waves
+        this.ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+        this.ctx.lineWidth = 1;
+        for (let i = 0; i < 5; i++) {
+            this.ctx.beginPath();
+            for (let x = 0; x < lw; x += 10) {
+                const wave = Math.sin(x * 0.02 + this.time + i) * 2;
+                if (x === 0) this.ctx.moveTo(x, ly + lh * 0.3 + i * 15 + wave);
+                else this.ctx.lineTo(x, ly + lh * 0.3 + i * 15 + wave);
+            }
+            this.ctx.stroke();
+        }
+
+        // Label
+        this.ctx.fillStyle = 'rgba(255,255,255,0.4)';
+        this.ctx.font = '12px system-ui';
+        this.ctx.textAlign = 'center';
+        this.ctx.fillText('LAKE OF THE OZARKS', this.width * 0.5, ly + 25);
+    }
+
+    drawDam() {
+        const dx = this.width * 0.15;
+        const dy = this.height * 0.14;
+        const dw = this.width * 0.7;
+        const dh = this.height * 0.045;
+
+        // Dam shadow
+        this.ctx.fillStyle = 'rgba(0,0,0,0.3)';
+        this.ctx.fillRect(dx + 5, dy + dh + 3, dw, 8);
+
+        // Dam structure - concrete with 3D effect
         const damGrad = this.ctx.createLinearGradient(dx, dy, dx, dy + dh);
-        damGrad.addColorStop(0, '#7a7a8a');
-        damGrad.addColorStop(0.5, '#5a5a6a');
-        damGrad.addColorStop(1, '#4a4a5a');
+        damGrad.addColorStop(0, '#8a8a9a');
+        damGrad.addColorStop(0.3, '#7a7a8a');
+        damGrad.addColorStop(1, '#5a5a6a');
 
         // Dam face
         this.ctx.fillStyle = damGrad;
         this.ctx.beginPath();
         this.ctx.moveTo(dx, dy + dh);
-        this.ctx.lineTo(dx + dw * 0.05, dy);
-        this.ctx.lineTo(dx + dw * 0.95, dy);
+        this.ctx.lineTo(dx + dw * 0.02, dy);
+        this.ctx.lineTo(dx + dw * 0.98, dy);
         this.ctx.lineTo(dx + dw, dy + dh);
         this.ctx.closePath();
         this.ctx.fill();
 
-        // Dam top
-        this.ctx.fillStyle = '#8a8a9a';
-        this.ctx.fillRect(dx + dw * 0.05, dy - 4, dw * 0.9, 6);
+        // Dam top (road)
+        this.ctx.fillStyle = '#6a6a7a';
+        this.ctx.fillRect(dx + dw * 0.02, dy - 6, dw * 0.96, 8);
 
-        // Vertical segments
-        this.ctx.strokeStyle = '#3a3a4a';
-        this.ctx.lineWidth = 2;
-        for (let i = 1; i < 10; i++) {
-            const sx = dx + (dw / 10) * i;
+        // Road markings
+        this.ctx.strokeStyle = '#aaa';
+        this.ctx.lineWidth = 1;
+        this.ctx.setLineDash([10, 10]);
+        this.ctx.beginPath();
+        this.ctx.moveTo(dx + dw * 0.05, dy - 2);
+        this.ctx.lineTo(dx + dw * 0.95, dy - 2);
+        this.ctx.stroke();
+        this.ctx.setLineDash([]);
+
+        // Vertical support pillars
+        this.ctx.strokeStyle = '#4a4a5a';
+        this.ctx.lineWidth = 3;
+        for (let i = 1; i < 12; i++) {
+            const sx = dx + (dw / 12) * i;
             this.ctx.beginPath();
-            this.ctx.moveTo(sx, dy);
-            this.ctx.lineTo(sx, dy + dh);
+            this.ctx.moveTo(sx, dy + 2);
+            this.ctx.lineTo(sx, dy + dh - 2);
             this.ctx.stroke();
         }
 
-        // Spillway
-        this.ctx.fillStyle = 'rgba(100,180,255,0.5)';
-        this.ctx.fillRect(dx + dw * 0.42, dy + dh - 5, dw * 0.16, 8);
+        // Spillway gates
+        for (let i = 0; i < 3; i++) {
+            const gx = dx + dw * 0.35 + i * dw * 0.12;
+            this.ctx.fillStyle = '#3a3a4a';
+            this.ctx.fillRect(gx, dy + dh * 0.3, dw * 0.08, dh * 0.6);
 
-        // Hydro building
-        this.ctx.fillStyle = '#4a4a5a';
-        this.ctx.fillRect(dx + dw * 0.4, dy + dh, dw * 0.2, 20);
+            // Water flow indicator
+            this.ctx.fillStyle = 'rgba(100,180,255,0.4)';
+            this.ctx.fillRect(gx + 2, dy + dh - 3, dw * 0.08 - 4, 5);
+        }
 
         // Label
-        this.ctx.fillStyle = '#aaa';
+        this.ctx.fillStyle = 'rgba(255,255,255,0.6)';
         this.ctx.font = 'bold 11px system-ui';
         this.ctx.textAlign = 'center';
-        this.ctx.fillText('HYDROELECTRIC DAM', dx + dw / 2, dy - 12);
+        this.ctx.fillText('BAGNELL DAM', dx + dw / 2, dy - 14);
     }
 
     drawDataCenter(thermal) {
@@ -1960,12 +2280,19 @@ class Renderer {
     drawPipes(thermal) {
         const flowSpeed = thermal.loopA.flowRate / 2500;
 
-        // Define pipe routes with labels
+        // Define pipe routes for north-to-south layout
+        // Data Center (south) → Heat Exchanger → Community Areas → Lake (north)
         const pipes = [
-            { from: [0.5, 0.82], to: [0.5, 0.74], temp: thermal.loopA.supplyTemp, label: 'LOOP A' },
-            { from: [0.5, 0.72], to: [0.5, 0.55], temp: thermal.loopB.supplyTemp, label: 'LOOP B' },
-            { from: [0.42, 0.72], to: [0.17, 0.5], temp: thermal.loopB.supplyTemp - 5, label: null },
-            { from: [0.58, 0.72], to: [0.83, 0.5], temp: thermal.loopB.supplyTemp - 10, label: null },
+            // Loop A: Data Center to Heat Exchanger (hot water)
+            { from: [0.5, 0.82], to: [0.5, 0.76], temp: thermal.loopA.supplyTemp, label: 'LOOP A' },
+            // Loop B: Heat Exchanger to community amenities (warm water)
+            { from: [0.5, 0.70], to: [0.5, 0.58], temp: thermal.loopB.supplyTemp, label: 'LOOP B' },
+            // Branch to Thermal Spa (west)
+            { from: [0.42, 0.72], to: [0.17, 0.57], temp: thermal.loopB.supplyTemp - 5, label: null },
+            // Branch to Beach area (east of spa)
+            { from: [0.45, 0.72], to: [0.32, 0.58], temp: thermal.loopB.supplyTemp - 8, label: null },
+            // Return from lake to reservoir (cooled water)
+            { from: [0.5, 0.55], to: [0.5, 0.48], temp: thermal.loopB.returnTemp, label: 'RETURN' },
         ];
 
         for (const pipe of pipes) {
@@ -2052,29 +2379,52 @@ class Renderer {
         ctx.fillStyle = '#0a1520';
         ctx.fillRect(0, 0, w, h);
 
-        // Reservoir
+        // Lake of the Ozarks (north)
+        ctx.fillStyle = '#1a4a6a';
+        ctx.fillRect(0, 0, w, h * 0.12);
+
+        // Bagnell Dam
+        ctx.fillStyle = '#666';
+        ctx.fillRect(w * 0.15, h * 0.11, w * 0.7, h * 0.04);
+
+        // Lake Livara (3-finger dinosaur footprint shape)
         ctx.fillStyle = this.tempToColor(thermal.zones.reservoir.temp, 0.7);
         ctx.beginPath();
-        ctx.ellipse(w * 0.5, h * 0.4, w * 0.3, h * 0.2, 0, 0, Math.PI * 2);
+        // Simplified footprint - three toes and heel
+        const cx = w * 0.5;
+        const baseY = h * 0.18;
+        // Left toe
+        ctx.moveTo(cx - w * 0.15, baseY + h * 0.25);
+        ctx.quadraticCurveTo(cx - w * 0.18, baseY + h * 0.1, cx - w * 0.12, baseY);
+        ctx.quadraticCurveTo(cx - w * 0.06, baseY - h * 0.02, cx, baseY - h * 0.04);
+        // Right toe
+        ctx.quadraticCurveTo(cx + w * 0.06, baseY - h * 0.02, cx + w * 0.12, baseY);
+        ctx.quadraticCurveTo(cx + w * 0.18, baseY + h * 0.1, cx + w * 0.15, baseY + h * 0.25);
+        // Heel
+        ctx.quadraticCurveTo(cx + w * 0.12, baseY + h * 0.32, cx, baseY + h * 0.35);
+        ctx.quadraticCurveTo(cx - w * 0.12, baseY + h * 0.32, cx - w * 0.15, baseY + h * 0.25);
+        ctx.closePath();
         ctx.fill();
 
-        // Dam
-        ctx.fillStyle = '#666';
-        ctx.fillRect(w * 0.25, h * 0.15, w * 0.5, h * 0.08);
+        // Community area (south of lake)
+        ctx.fillStyle = '#3d5b3d';
+        ctx.fillRect(w * 0.15, h * 0.55, w * 0.7, h * 0.12);
 
-        // Data center
+        // Downtown river
+        ctx.fillStyle = this.tempToColor(thermal.zones.lazy.temp, 0.7);
+        ctx.fillRect(w * 0.15, h * 0.64, w * 0.7, h * 0.04);
+
+        // Heat exchanger
+        ctx.fillStyle = '#5a4030';
+        ctx.fillRect(w * 0.42, h * 0.72, w * 0.16, h * 0.05);
+
+        // Data center (south)
         ctx.fillStyle = '#2a2a4a';
-        ctx.fillRect(w * 0.3, h * 0.8, w * 0.4, h * 0.12);
+        ctx.fillRect(w * 0.3, h * 0.82, w * 0.4, h * 0.12);
 
-        // Zones
-        const zones = [
-            { x: 0.12, y: 0.45, key: 'spa' },
-            { x: 0.78, y: 0.45, key: 'rapids' }
-        ];
-        for (const z of zones) {
-            ctx.fillStyle = this.tempToColor(thermal.zones[z.key].temp, 0.8);
-            ctx.fillRect(z.x * w, z.y * h, w * 0.1, h * 0.12);
-        }
+        // Thermal Spa indicator
+        ctx.fillStyle = this.tempToColor(thermal.zones.spa.temp, 0.8);
+        ctx.fillRect(w * 0.12, h * 0.54, w * 0.08, h * 0.06);
 
         // Border
         ctx.strokeStyle = 'rgba(0,212,255,0.3)';
@@ -2097,27 +2447,38 @@ class Renderer {
         // Apply camera transform for world elements
         this.applyCamera();
 
-        // Background layers
-        this.drawMountains();
-        this.drawTerrain();
+        // === NORTH TO SOUTH LAYOUT ===
 
-        // Main elements (back to front)
+        // 1. Lake of the Ozarks (beyond dam, northernmost)
+        this.drawLakeOfOzarks();
+
+        // 2. Bagnell Dam
         this.drawDam();
-        this.drawTrees();
-        this.drawReservoir(thermal);
-        this.drawFountains(thermal);
+
+        // 3. Lake Livara (3-finger dinosaur footprint)
+        this.drawLakeLivara(thermal);
         this.drawBoats(thermal);
+
+        // 4. Terrain around community
+        this.drawTerrain();
+        this.drawTrees();
+
+        // 5. Livara Community Development (south shore)
+        this.drawCommunityBuildings(thermal);
+
+        // 6. Thermal amenities along shore
+        this.drawZone(0.12, 0.54, 0.1, 0.06, 'Thermal Spa', '♨️', thermal, 'spa');
+        this.drawZone(0.28, 0.55, 0.08, 0.05, 'Beach', '🏖️', thermal, 'beach');
+        this.drawFountains(thermal);
+
+        // 7. Downtown River (wave surfing + kayaking)
+        this.drawDowntownRiver(thermal);
+
+        // 8. Heat distribution system
+        this.drawHeatExchanger(thermal);
         this.drawPipes(thermal);
 
-        // Zones
-        this.drawZone(0.08, 0.42, 0.12, 0.13, 'Thermal Spa', '♨️', thermal, 'spa');
-        this.drawZone(0.80, 0.42, 0.12, 0.13, 'Rapids', '🚣', thermal, 'rapids');
-        this.drawZone(0.25, 0.44, 0.1, 0.1, 'Surf', '🏄', thermal, 'surf');
-        this.drawZone(0.65, 0.44, 0.1, 0.1, 'Beach', '🏖️', thermal, 'beach');
-
-        this.drawLazyRiver(thermal);
-        this.drawGreenWall();
-        this.drawHeatExchanger(thermal);
+        // 9. Data Center (southernmost - heat source)
         this.drawDataCenter(thermal);
 
         // Atmospheric effects
